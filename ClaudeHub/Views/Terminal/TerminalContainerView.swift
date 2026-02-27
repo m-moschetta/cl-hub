@@ -12,14 +12,16 @@ struct TerminalContainerView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Toolbar
+            // Toolbar — fixed height, never negotiates with terminal
             terminalToolbar
+                .fixedSize(horizontal: false, vertical: true)
 
-            // Terminal
+            // Terminal — fills all remaining space
             TerminalRepresentable(
                 sessionID: session.id,
+                command: session.command,
                 workingDirectory: session.worktreePath ?? session.workingDirectory,
-                claudeFlags: session.claudeFlags,
+                flags: session.claudeFlags,
                 environmentVariables: session.environmentVariables,
                 fontSizeOverride: session.fontSizeOverride,
                 onStatusChange: { status in
@@ -33,16 +35,17 @@ struct TerminalContainerView: View {
                     processManager.unregister(sessionID: session.id)
                 },
                 onTerminalReady: { tv in
-                    terminalView = tv
+                    self.terminalView = tv
                     let process = ProcessManager.TerminalProcess(
                         sessionID: session.id,
                         pid: tv.processPID ?? 0,
                         sendInput: { text in tv.sendText(text) }
                     )
-                    processManager.register(process: process)
-                    session.status = .idle
+                    self.processManager.register(process: process)
+                    self.sessionManager.updateSessionStatus(session, status: .idle)
                 }
             )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(Color(nsColor: TerminalTheme.dark.background))
     }

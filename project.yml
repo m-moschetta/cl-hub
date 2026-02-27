@@ -29,10 +29,10 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.claudehub.app
-        PRODUCT_NAME: ClaudeHub
+        PRODUCT_NAME: "Cl.hub"
         MARKETING_VERSION: "1.0.0"
         CURRENT_PROJECT_VERSION: "1"
-        INFOPLIST_KEY_CFBundleDisplayName: ClaudeHub
+        INFOPLIST_KEY_CFBundleDisplayName: "Cl.hub"
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.developer-tools"
         SWIFT_VERSION: "5.10"
         MACOSX_DEPLOYMENT_TARGET: "14.0"

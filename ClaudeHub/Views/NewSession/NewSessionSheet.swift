@@ -1,20 +1,28 @@
 import SwiftUI
 import ClaudeHubCore
 
-/// Wizard for creating a new Claude Code session.
+/// Wizard for creating a new session with any command.
 struct NewSessionSheet: View {
     @EnvironmentObject var sessionManager: SessionManager
     @Environment(\.dismiss) var dismiss
 
     @State private var name = ""
     @State private var projectPath = ""
-    @State private var claudeFlags = ""
+    @State private var selectedCommand = "claude"
+    @State private var customCommand = ""
+    @State private var flags = ""
     @State private var useWorktree = false
     @State private var initialPrompt = ""
     @State private var selectedGroupID: UUID?
+    @State private var groups: [SessionGroup] = []
 
-    @Query(sort: \SessionGroup.sortOrder)
-    private var groups: [SessionGroup]
+    private let presetCommands = [
+        ("claude", "Claude Code"),
+        ("opencode", "OpenCode"),
+        ("zsh", "Terminal (zsh)"),
+        ("bash", "Terminal (bash)"),
+        ("custom", "Custom..."),
+    ]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -42,6 +50,16 @@ struct NewSessionSheet: View {
                         }
                     }
 
+                    Picker("Command", selection: $selectedCommand) {
+                        ForEach(presetCommands, id: \.0) { cmd in
+                            Text(cmd.1).tag(cmd.0)
+                        }
+                    }
+
+                    if selectedCommand == "custom" {
+                        TextField("Custom Command", text: $customCommand, prompt: Text("/usr/local/bin/mytool"))
+                    }
+
                     Picker("Group", selection: $selectedGroupID) {
                         Text("No Group").tag(nil as UUID?)
                         ForEach(groups, id: \.id) { group in
@@ -54,17 +72,19 @@ struct NewSessionSheet: View {
                     Toggle("Create Git Worktree", isOn: $useWorktree)
                         .help("Isolate this session in its own git worktree branch")
 
-                    TextField("Claude Flags", text: $claudeFlags, prompt: Text("--model sonnet"))
-                        .help("Additional flags passed to the claude command")
+                    TextField("Flags", text: $flags, prompt: Text("--model sonnet"))
+                        .help("Additional flags appended to the command")
                 }
 
-                Section("Initial Prompt (optional)") {
-                    TextEditor(text: $initialPrompt)
-                        .font(.system(size: 13, design: .monospaced))
-                        .frame(minHeight: 80)
-                        .scrollContentBackground(.hidden)
-                        .padding(4)
-                        .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 6))
+                if selectedCommand != "zsh" && selectedCommand != "bash" {
+                    Section("Initial Prompt (optional)") {
+                        TextEditor(text: $initialPrompt)
+                            .font(.system(size: 13, design: .monospaced))
+                            .frame(minHeight: 80)
+                            .scrollContentBackground(.hidden)
+                            .padding(4)
+                            .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 6))
+                    }
                 }
             }
             .formStyle(.grouped)
@@ -79,11 +99,22 @@ struct NewSessionSheet: View {
                     createSession()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(name.isEmpty || projectPath.isEmpty)
+                .disabled(name.isEmpty || projectPath.isEmpty || (selectedCommand == "custom" && customCommand.isEmpty))
             }
             .padding()
         }
-        .frame(width: 500)
+        .frame(width: 520)
+        .onAppear {
+            self.groups = sessionManager.fetchGroups()
+            // Auto-open directory picker so the user picks a folder right away
+            DispatchQueue.main.async {
+                browseDirectory()
+            }
+        }
+    }
+
+    private var effectiveCommand: String {
+        selectedCommand == "custom" ? customCommand : selectedCommand
     }
 
     private func browseDirectory() {
@@ -93,22 +124,32 @@ struct NewSessionSheet: View {
         panel.allowsMultipleSelection = false
         panel.message = "Select the project directory"
 
+        // Start from the last used directory if available
+        if let lastPath = UserDefaults.standard.string(forKey: "lastProjectPath"),
+           FileManager.default.fileExists(atPath: lastPath) {
+            panel.directoryURL = URL(fileURLWithPath: lastPath)
+        } else {
+            panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+        }
+
         if panel.runModal() == .OK {
             projectPath = panel.url?.path ?? ""
             if name.isEmpty {
                 name = panel.url?.lastPathComponent ?? ""
             }
+            // Remember the parent directory for next time
+            if let parent = panel.url?.deletingLastPathComponent().path {
+                UserDefaults.standard.set(parent, forKey: "lastProjectPath")
+            }
         }
     }
 
     private func createSession() {
-        var worktreePath: String?
-        var worktreeBranch: String?
-
         let session = sessionManager.createSession(
             name: name,
             projectPath: projectPath,
-            claudeFlags: claudeFlags,
+            command: effectiveCommand,
+            claudeFlags: flags,
             groupID: selectedGroupID
         )
 

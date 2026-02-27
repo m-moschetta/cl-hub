@@ -122,6 +122,6 @@ struct BroadcastSheet: View {
             }
             .padding()
         }
-        .frame(width: 500, minHeight: 450)
+        .frame(minWidth: 500, minHeight: 450)
     }
 }

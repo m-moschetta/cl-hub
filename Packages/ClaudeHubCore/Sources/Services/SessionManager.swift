@@ -17,6 +17,7 @@ public final class SessionManager: ObservableObject {
     public func createSession(
         name: String,
         projectPath: String,
+        command: String = "claude",
         claudeFlags: String = "",
         groupID: UUID? = nil,
         worktreePath: String? = nil,
@@ -25,6 +26,7 @@ public final class SessionManager: ObservableObject {
         let session = Session(
             name: name,
             projectPath: projectPath,
+            command: command,
             worktreePath: worktreePath,
             worktreeBranch: worktreeBranch,
             groupID: groupID,

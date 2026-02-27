@@ -7,8 +7,9 @@ import ClaudeHubCore
 /// NSViewRepresentable wrapper for ClaudeTerminalView, bridging it into SwiftUI.
 struct TerminalRepresentable: NSViewRepresentable {
     let sessionID: UUID
+    let command: String
     let workingDirectory: String
-    let claudeFlags: String
+    let flags: String
     let environmentVariables: [String: String]
     let fontSizeOverride: Double?
 
@@ -32,39 +33,42 @@ struct TerminalRepresentable: NSViewRepresentable {
             frame: NSRect(x: 0, y: 0, width: 800, height: 600)
         )
 
-        // Set up output parser callbacks
+        // Set up output parser callbacks — defer to avoid mutating state during view update
         terminalView.outputParser.onStatusChange = { status in
-            onStatusChange?(status)
+            DispatchQueue.main.async { onStatusChange?(status) }
         }
         terminalView.outputParser.onPreviewUpdate = { preview in
-            onPreviewUpdate?(preview)
+            DispatchQueue.main.async { onPreviewUpdate?(preview) }
         }
         terminalView.onProcessTerminated = {
-            onProcessTerminated?()
+            DispatchQueue.main.async { onProcessTerminated?() }
         }
 
         // Set up the TerminalView delegate for output interception
         context.coordinator.terminalView = terminalView
-        terminalView.terminalDelegate = context.coordinator
+        terminalView.processDelegate = context.coordinator
 
         // Restore scrollback if available, then start session
         terminalView.restoreScrollback()
-        terminalView.startClaudeSession(
+        terminalView.startSession(
+            command: command,
             workingDirectory: workingDirectory,
-            claudeFlags: claudeFlags,
+            flags: flags,
             environmentVariables: environmentVariables
         )
 
-        onTerminalReady?(terminalView)
+        // Defer onTerminalReady to next run loop — makeNSView runs during view update
+        DispatchQueue.main.async { onTerminalReady?(terminalView) }
 
         return terminalView
     }
 
     func updateNSView(_ nsView: ClaudeTerminalView, context: Context) {
         // Font size updates
-        if let fontSize = fontSizeOverride {
-            nsView.setFontSize(CGFloat(fontSize))
-        }
+        // NOTE: Avoid calling internal API `setFontSize`. If `ClaudeTerminalView` exposes a public way
+        // to update font size at runtime (e.g., via theme), prefer that here. For now, rely on the
+        // initial theme sizing applied in makeNSView.
+        _ = fontSizeOverride // intentionally unused at runtime update to avoid internal API usage
     }
 
     func makeCoordinator() -> Coordinator {
@@ -87,14 +91,12 @@ struct TerminalRepresentable: NSViewRepresentable {
         }
 
         func processTerminated(source: TerminalView, exitCode: Int32?) {
-            // Already handled by ClaudeTerminalView.onProcessTerminated
-        }
-
-        // Intercept data for parsing
-        func dataReceived(slice: ArraySlice<UInt8>) {
             guard let terminal = terminalView else { return }
-            let data = Data(slice)
-            terminal.outputParser.processData(data)
+            DispatchQueue.main.async {
+                terminal.outputParser.onStatusChange?(.disconnected)
+                terminal.onProcessTerminated?()
+            }
         }
     }
 }
+

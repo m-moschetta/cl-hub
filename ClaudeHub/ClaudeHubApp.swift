@@ -77,7 +77,7 @@ struct ClaudeHubApp: App {
         }
 
         // Menu bar extra for quick switching
-        MenuBarExtra("ClaudeHub", systemImage: "terminal.fill") {
+        MenuBarExtra("Cl.hub", systemImage: "terminal.fill") {
             MenuBarView()
                 .environmentObject(sessionManager)
                 .environmentObject(processManager)
@@ -133,7 +133,7 @@ struct MenuBarView: View {
 
         Divider()
 
-        Button("Quit ClaudeHub") {
+        Button("Quit Cl.hub") {
             NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q")

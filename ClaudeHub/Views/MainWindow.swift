@@ -2,38 +2,53 @@ import SwiftUI
 import SwiftData
 import ClaudeHubCore
 
-/// Root view with NavigationSplitView: sidebar + detail.
+/// Root view using HSplitView to keep terminal processes alive across selection changes.
+/// NavigationSplitView destroys detail content on selection change, which kills terminal processes.
+/// HSplitView preserves both panes independently.
 struct MainWindow: View {
     @EnvironmentObject var sessionManager: SessionManager
     @EnvironmentObject var processManager: ProcessManager
     @EnvironmentObject var orchestrationEngine: OrchestrationEngine
 
     @State private var selectedSessionID: UUID?
+    @State private var activatedSessionIDs: Set<UUID> = []
+    @State private var showNewSession = false
     @State private var showBroadcast = false
     @State private var showTaskWizard = false
     @State private var showDashboard = false
-    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     @Query(filter: #Predicate<Session> { !$0.isArchived },
            sort: \Session.sortOrder)
     private var sessions: [Session]
 
     var body: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
+        HSplitView {
+            // Sidebar
             SidebarView(selectedSessionID: $selectedSessionID)
-                .navigationSplitViewColumnWidth(min: 240, ideal: 280, max: 360)
-        } detail: {
-            if showDashboard {
-                DashboardView(selectedSessionID: $selectedSessionID)
-                    .onChange(of: selectedSessionID) { _, newValue in
-                        if newValue != nil { showDashboard = false }
-                    }
-            } else if let sessionID = selectedSessionID,
-                      let session = sessions.first(where: { $0.id == sessionID }) {
-                TerminalContainerView(session: session)
-            } else {
-                emptyState
+                .frame(minWidth: 240, idealWidth: 280, maxWidth: 360)
+
+            // Detail: terminals live in a ZStack, show/hide by opacity
+            ZStack {
+                if showDashboard {
+                    DashboardView(selectedSessionID: $selectedSessionID)
+                        .onChange(of: selectedSessionID) { _, newValue in
+                            if newValue != nil { showDashboard = false }
+                        }
+                }
+
+                // Terminals for activated sessions — kept alive permanently
+                ForEach(activatedSessions, id: \.id) { session in
+                    let isVisible = session.id == selectedSessionID && !showDashboard
+                    TerminalContainerView(session: session)
+                        .opacity(isVisible ? 1 : 0)
+                        .allowsHitTesting(isVisible)
+                }
+
+                if selectedSessionID == nil && !showDashboard {
+                    emptyState
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
@@ -53,18 +68,29 @@ struct MainWindow: View {
                 .help("New Task")
             }
         }
+        .sheet(isPresented: $showNewSession) {
+            NewSessionSheet()
+        }
         .sheet(isPresented: $showBroadcast) {
             BroadcastSheet()
         }
         .sheet(isPresented: $showTaskWizard) {
             TaskWizardView()
         }
-        .onAppear {
+        .task {
             selectedSessionID = sessionManager.selectedSessionID
         }
         .onChange(of: selectedSessionID) { _, newValue in
             sessionManager.selectedSessionID = newValue
+            if let id = newValue {
+                activatedSessionIDs.insert(id)
+            }
         }
+    }
+
+    /// Sessions that have been selected at least once — only these get a terminal.
+    private var activatedSessions: [Session] {
+        sessions.filter { activatedSessionIDs.contains($0.id) }
     }
 
     private var emptyState: some View {
@@ -83,10 +109,7 @@ struct MainWindow: View {
 
             HStack(spacing: 12) {
                 Button("New Session") {
-                    // Trigger new session sheet via notification
-                    NotificationCenter.default.post(
-                        name: .init("showNewSession"), object: nil
-                    )
+                    showNewSession = true
                 }
                 .buttonStyle(.borderedProminent)
 

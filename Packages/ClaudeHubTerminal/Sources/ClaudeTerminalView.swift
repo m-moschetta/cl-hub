@@ -11,8 +11,9 @@ public class ClaudeTerminalView: LocalProcessTerminalView {
     private var theme: TerminalTheme
 
     /// The PID of the running process, if any.
-    public var processPID: Int32? {
-        getTerminal().getPid?()
+    public var processPID: pid_t? {
+        let pid = process.shellPid
+        return pid != 0 ? pid : nil
     }
 
     /// Callback when the process terminates.
@@ -38,6 +39,14 @@ public class ClaudeTerminalView: LocalProcessTerminalView {
         fatalError("init(coder:) is not supported")
     }
 
+    // MARK: - Layout
+
+    /// Prevent SwiftUI layout recursion by reporting no intrinsic size.
+    /// SwiftUI will assign the available space instead of negotiating with the NSView.
+    public override var intrinsicContentSize: NSSize {
+        NSSize(width: NSView.noIntrinsicMetric, height: NSView.noIntrinsicMetric)
+    }
+
     // MARK: - Configuration
 
     private func configureAppearance() {
@@ -47,19 +56,9 @@ public class ClaudeTerminalView: LocalProcessTerminalView {
         terminal.backgroundColor = nativeForegroundColor(theme.background)
         terminal.foregroundColor = nativeForegroundColor(theme.foreground)
 
-        // Set ANSI colors
-        for (index, color) in theme.ansiColors.enumerated() where index < 16 {
-            terminal.installColors(
-                DefaultColorMap(
-                    ansiColors: theme.ansiColors.map { nativeForegroundColor($0) }
-                )
-            )
-            break  // installColors sets all at once
-        }
-
         // Font
         let font = theme.font
-        terminal.setFont(font: font, cellDimensions: nil)
+        self.font = font
     }
 
     private func nativeForegroundColor(_ color: NSColor) -> Color {
@@ -75,35 +74,59 @@ public class ClaudeTerminalView: LocalProcessTerminalView {
 
     // MARK: - Process Management
 
-    /// Start a Claude Code session in the specified directory.
-    public func startClaudeSession(
+    /// Start a session in the specified directory with any command.
+    /// - Parameters:
+    ///   - command: The command to run ("claude", "opencode", "zsh", or any executable)
+    ///   - workingDirectory: The directory to cd into before running
+    ///   - flags: Additional flags appended to the command
+    ///   - environmentVariables: Per-session env var overrides
+    public func startSession(
+        command: String = "claude",
         workingDirectory: String,
-        claudeFlags: String = "",
+        flags: String = "",
         environmentVariables: [String: String] = [:]
     ) {
-        var env = ProcessInfo.processInfo.environment
-        // Merge custom env vars
-        for (key, value) in environmentVariables {
-            env[key] = value
-        }
-        // Ensure proper terminal type
-        env["TERM"] = "xterm-256color"
-        env["COLORTERM"] = "truecolor"
-
-        let claudeCommand: String
-        if claudeFlags.isEmpty {
-            claudeCommand = "claude"
+        // Resolve the command to an absolute path
+        let resolvedCommand: String
+        if command.hasPrefix("/") {
+            // Already absolute
+            resolvedCommand = command
+        } else if command == "zsh" || command == "bash" {
+            // Plain shell — no resolution needed, just launch interactively
+            resolvedCommand = command
         } else {
-            claudeCommand = "claude \(claudeFlags)"
+            // Resolve via login shell (works for claude, opencode, etc.)
+            resolvedCommand = Self.resolveCommandPath(command)
         }
 
-        // Use login shell to pick up PATH and other env
-        let shellArgs = ["-l", "-c", "cd \(shellQuoted(workingDirectory)) && \(claudeCommand)"]
+        let fullCommand: String
+        if flags.isEmpty {
+            fullCommand = shellQuoted(resolvedCommand)
+        } else {
+            fullCommand = "\(shellQuoted(resolvedCommand)) \(flags)"
+        }
+
+        // Build env var exports for per-session overrides
+        var envExports = "unset CLAUDECODE CLAUDE_CODE; export TERM=xterm-256color; export COLORTERM=truecolor"
+        for (key, value) in environmentVariables {
+            envExports += "; export \(key)=\(shellQuoted(value))"
+        }
+
+        let isPlainShell = (command == "zsh" || command == "bash")
+        let execCommand: String
+        if isPlainShell {
+            // For plain shells, just cd and start interactive
+            execCommand = "\(envExports); cd \(shellQuoted(workingDirectory)) && exec \(command)"
+        } else {
+            execCommand = "\(envExports); cd \(shellQuoted(workingDirectory)) && exec \(fullCommand)"
+        }
+
+        let shellArgs = ["-c", execCommand]
 
         startProcess(
             executable: "/bin/zsh",
             args: shellArgs,
-            environment: env.map { "\($0.key)=\($0.value)" },
+            environment: nil,
             execName: nil
         )
 
@@ -116,7 +139,7 @@ public class ClaudeTerminalView: LocalProcessTerminalView {
     /// Restore scrollback from a previous session.
     public func restoreScrollback() {
         guard let data = ScrollbackStore.shared.readScrollback(for: sessionID) else { return }
-        feed(byteArray: [UInt8](data))
+        feed(byteArray: [UInt8](data)[...])
     }
 
     /// Apply a new theme to the terminal.
@@ -134,17 +157,56 @@ public class ClaudeTerminalView: LocalProcessTerminalView {
 
     // MARK: - Output Interception
 
-    public override func processTerminated(_ source: Terminal, exitCode: Int32?) {
-        super.processTerminated(source, exitCode: exitCode)
-        outputParser.onStatusChange?(.disconnected)
-        onProcessTerminated?()
+    /// Override dataReceived to intercept terminal output for status detection and scrollback.
+    public override func dataReceived(slice: ArraySlice<UInt8>) {
+        super.dataReceived(slice: slice)
+        let data = Data(slice)
+        outputParser.processData(data)
     }
 
-    // Note: SwiftTerm's LocalProcessTerminalView calls hostCurrentDirectoryUpdate
-    // and other delegate methods. For output interception, we rely on the
-    // TerminalViewDelegate methods that the Coordinator in TerminalRepresentable implements.
-
     // MARK: - Helpers
+
+    /// Resolves any command name to its absolute path via a login shell.
+    private static var _pathCache: [String: String] = [:]
+
+    private static func resolveCommandPath(_ command: String) -> String {
+        if let cached = _pathCache[command] { return cached }
+
+        // 1. Ask a login interactive shell where the command is
+        let proc = Process()
+        let pipe = Pipe()
+        proc.standardOutput = pipe
+        proc.standardError = FileHandle.nullDevice
+        proc.executableURL = URL(fileURLWithPath: "/bin/zsh")
+        proc.arguments = ["-l", "-i", "-c", "which \(command)"]
+        do {
+            try proc.run()
+            proc.waitUntilExit()
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            let resolved = (String(data: data, encoding: .utf8) ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if !resolved.isEmpty && resolved.hasPrefix("/") {
+                _pathCache[command] = resolved
+                return resolved
+            }
+        } catch {}
+
+        // 2. Check well-known locations manually
+        let home = ProcessInfo.processInfo.environment["HOME"] ?? NSHomeDirectory()
+        let candidates = [
+            "\(home)/.local/bin/\(command)",
+            "/opt/homebrew/bin/\(command)",
+            "/usr/local/bin/\(command)",
+        ]
+        for candidate in candidates {
+            if FileManager.default.fileExists(atPath: candidate) {
+                _pathCache[command] = candidate
+                return candidate
+            }
+        }
+
+        return command
+    }
 
     private func shellQuoted(_ path: String) -> String {
         "'\(path.replacingOccurrences(of: "'", with: "'\\''"))'"
@@ -160,3 +222,4 @@ public class ClaudeTerminalView: LocalProcessTerminalView {
         send(txt: command + "\n")
     }
 }
+

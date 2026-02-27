@@ -21,6 +21,7 @@ public final class Session {
     public var scrollbackFilePath: String?
 
     // Per-session settings
+    public var command: String          // "claude", "opencode", "zsh", or any command
     public var claudeFlags: String
     public var environmentVariablesData: Data?
     public var workingDirectory: String
@@ -47,6 +48,7 @@ public final class Session {
     public init(
         name: String,
         projectPath: String,
+        command: String = "claude",
         worktreePath: String? = nil,
         worktreeBranch: String? = nil,
         groupID: UUID? = nil,
@@ -56,6 +58,7 @@ public final class Session {
         self.id = UUID()
         self.name = name
         self.projectPath = projectPath
+        self.command = command
         self.worktreePath = worktreePath
         self.worktreeBranch = worktreeBranch
         self.groupID = groupID
