@@ -34,13 +34,16 @@ private func configureRoutes(_ app: Application, registry: RelayRegistry, relayP
             return
         }
 
+        app.logger.notice("Host \(hostID) WebSocket connected")
         registry.setHostSocket(ws, for: hostID)
 
         ws.onText { ws, text in
-            handleHostMessage(registry: registry, hostID: hostID, ws: ws, text: text, relayPublicURL: relayPublicURL)
+            app.logger.notice("Host \(hostID) text received (\(text.count) chars)")
+            handleHostMessage(registry: registry, hostID: hostID, ws: ws, text: text, relayPublicURL: relayPublicURL, logger: app.logger)
         }
 
         ws.onClose.whenComplete { _ in
+            app.logger.notice("Host \(hostID) disconnected")
             registry.removeHostSocket(for: hostID)
         }
     }
@@ -77,11 +80,17 @@ private func handleHostMessage(
     hostID: String,
     ws: WebSocket,
     text: String,
-    relayPublicURL: String
+    relayPublicURL: String,
+    logger: Logger
 ) {
     guard let data = text.data(using: .utf8),
           let header = try? makeDecoder().decode(RemoteEnvelopeHeader.self, from: data)
-    else { return }
+    else {
+        logger.notice("Failed to decode header for host \(hostID)")
+        return
+    }
+
+    logger.notice("Host message decoded: type=\(header.type)")
 
     switch header.type {
     case RemoteMessageType.hostRegister:
@@ -89,7 +98,9 @@ private func handleHostMessage(
         registry.registerHost(envelope.payload, for: hostID)
 
     case RemoteMessageType.hostHello:
+        logger.notice("Creating challenge for host \(hostID)")
         let challenge = registry.createChallenge(for: hostID)
+        logger.notice("Challenge created, sending via sendJSON")
         sendJSON(
             type: RemoteMessageType.challenge,
             target: RemotePeer(kind: .host, id: hostID),
@@ -266,9 +277,17 @@ private func sendJSON(
         "target": ["kind": target.kind.rawValue, "id": target.id],
         "payload": payload,
     ]
+    guard JSONSerialization.isValidJSONObject(dict) else {
+        print("[sendJSON] Invalid JSON object for type=\(type)")
+        return
+    }
     guard let data = try? JSONSerialization.data(withJSONObject: dict),
           let text = String(data: data, encoding: .utf8)
-    else { return }
+    else {
+        print("[sendJSON] Failed to serialize JSON for type=\(type)")
+        return
+    }
+    print("[sendJSON] Sending \(text.count) chars, type=\(type)")
     ws.send(text)
 }
 
