@@ -1,0 +1,459 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		11C31F50126F790816053C2A /* MobileRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F5CB9856E0108444286CD47 /* MobileRootView.swift */; };
+		2A568438F80362EDD7DEB4B9 /* MobileSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A3CFB8D810925F7517D1AA6 /* MobileSession.swift */; };
+		39820AA244B4C04E01946F4C /* PairingSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABB0776E8F4FEBFF2C7552F /* PairingSheet.swift */; };
+		3CD93805E278E6B7CC07E64E /* ChatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B202C39A25665E84742387 /* ChatListView.swift */; };
+		4BC18FBC18535F30CAB7CB55 /* RemoteTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4BE8603F7C0F9A886B9A214 /* RemoteTerminalView.swift */; };
+		5E8D60515970BDD05FB8D2B7 /* ClaudeHubMobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7DB59F332322C0116737F79 /* ClaudeHubMobileApp.swift */; };
+		7A8E75E68D87B307BD0B600A /* ClaudeHubRemote in Frameworks */ = {isa = PBXBuildFile; productRef = C733FAC24D59E2DDD471E65B /* ClaudeHubRemote */; };
+		84CD2796C1116B2EAC0F724F /* TerminalScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABBF762AE4BD0F371BE849C8 /* TerminalScreenView.swift */; };
+		85C97D66643E301BCAAC96EA /* MobileCredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A9574578A42BA388D500914 /* MobileCredentialStore.swift */; };
+		94CFA6B4B84835A3B7FEE880 /* ChatRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7814B3D9BBE89C318BAB7C1F /* ChatRowView.swift */; };
+		98B1F24A6C4B47F8A2ABB361 /* QRCodePairingParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C23CE161FC1A558F966105F8 /* QRCodePairingParser.swift */; };
+		B861E42D3B835B690402015C /* MobileConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95AF8096D238183441DC51A1 /* MobileConnectionState.swift */; };
+		CC17ECEFBE0427C99B9294DD /* QRCodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A58FAE769C3154D1B2F2D6 /* QRCodeScannerView.swift */; };
+		CC977CFF549FCB7BD1569976 /* MobileRelayClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F075EB938C426F857DF89BDB /* MobileRelayClient.swift */; };
+		E21645A5830F5A309A407051 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = D1B7EB9703F07E784E44AE06 /* SwiftTerm */; };
+		FB71A103FC36112A82E6626D /* MobileAppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EE8432B74430A98A3FBF92 /* MobileAppStore.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		01B202C39A25665E84742387 /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
+		0ABB0776E8F4FEBFF2C7552F /* PairingSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingSheet.swift; sourceTree = "<group>"; };
+		5F5CB9856E0108444286CD47 /* MobileRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileRootView.swift; sourceTree = "<group>"; };
+		6A3CFB8D810925F7517D1AA6 /* MobileSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileSession.swift; sourceTree = "<group>"; };
+		7814B3D9BBE89C318BAB7C1F /* ChatRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRowView.swift; sourceTree = "<group>"; };
+		7CC01A41E1A2B3486F489CBE /* ClaudeHubMobile.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ClaudeHubMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8A9574578A42BA388D500914 /* MobileCredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileCredentialStore.swift; sourceTree = "<group>"; };
+		95AF8096D238183441DC51A1 /* MobileConnectionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileConnectionState.swift; sourceTree = "<group>"; };
+		ABBF762AE4BD0F371BE849C8 /* TerminalScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalScreenView.swift; sourceTree = "<group>"; };
+		C23CE161FC1A558F966105F8 /* QRCodePairingParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodePairingParser.swift; sourceTree = "<group>"; };
+		CD3301A700D322D9A9F199E4 /* ClaudeHubRemote */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ClaudeHubRemote; path = ../../Packages/ClaudeHubRemote; sourceTree = SOURCE_ROOT; };
+		D2A58FAE769C3154D1B2F2D6 /* QRCodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerView.swift; sourceTree = "<group>"; };
+		D7EE8432B74430A98A3FBF92 /* MobileAppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileAppStore.swift; sourceTree = "<group>"; };
+		E4BE8603F7C0F9A886B9A214 /* RemoteTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteTerminalView.swift; sourceTree = "<group>"; };
+		E7DB59F332322C0116737F79 /* ClaudeHubMobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeHubMobileApp.swift; sourceTree = "<group>"; };
+		F075EB938C426F857DF89BDB /* MobileRelayClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileRelayClient.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		52845B8DD0A599B94EC23009 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7A8E75E68D87B307BD0B600A /* ClaudeHubRemote in Frameworks */,
+				E21645A5830F5A309A407051 /* SwiftTerm in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		427625E78C02551D15FA9340 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				E7DB59F332322C0116737F79 /* ClaudeHubMobileApp.swift */,
+				5F5CB9856E0108444286CD47 /* MobileRootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		4519175BAFA99C1C84F3B89E /* Chats */ = {
+			isa = PBXGroup;
+			children = (
+				01B202C39A25665E84742387 /* ChatListView.swift */,
+				7814B3D9BBE89C318BAB7C1F /* ChatRowView.swift */,
+			);
+			path = Chats;
+			sourceTree = "<group>";
+		};
+		4B38B2994A1DFA47E887D968 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7CC01A41E1A2B3486F489CBE /* ClaudeHubMobile.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7B9E8542B8A463D70E93DE3E /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				CD3301A700D322D9A9F199E4 /* ClaudeHubRemote */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		9853D49099D5B9C1B9FED04A /* Pairing */ = {
+			isa = PBXGroup;
+			children = (
+				0ABB0776E8F4FEBFF2C7552F /* PairingSheet.swift */,
+				D2A58FAE769C3154D1B2F2D6 /* QRCodeScannerView.swift */,
+			);
+			path = Pairing;
+			sourceTree = "<group>";
+		};
+		A9245136B76A797E209C002A = {
+			isa = PBXGroup;
+			children = (
+				427625E78C02551D15FA9340 /* App */,
+				CB16063D5D76354B176F2B21 /* Models */,
+				7B9E8542B8A463D70E93DE3E /* Packages */,
+				C764DB29638B108D307E384F /* Services */,
+				E1239F88333813692749F537 /* Views */,
+				4B38B2994A1DFA47E887D968 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B049FA7A20BF9D328BA50E55 /* Terminal */ = {
+			isa = PBXGroup;
+			children = (
+				E4BE8603F7C0F9A886B9A214 /* RemoteTerminalView.swift */,
+				ABBF762AE4BD0F371BE849C8 /* TerminalScreenView.swift */,
+			);
+			path = Terminal;
+			sourceTree = "<group>";
+		};
+		C764DB29638B108D307E384F /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				D7EE8432B74430A98A3FBF92 /* MobileAppStore.swift */,
+				8A9574578A42BA388D500914 /* MobileCredentialStore.swift */,
+				F075EB938C426F857DF89BDB /* MobileRelayClient.swift */,
+				C23CE161FC1A558F966105F8 /* QRCodePairingParser.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		CB16063D5D76354B176F2B21 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				95AF8096D238183441DC51A1 /* MobileConnectionState.swift */,
+				6A3CFB8D810925F7517D1AA6 /* MobileSession.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E1239F88333813692749F537 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				4519175BAFA99C1C84F3B89E /* Chats */,
+				9853D49099D5B9C1B9FED04A /* Pairing */,
+				B049FA7A20BF9D328BA50E55 /* Terminal */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		747D63A9B91F92F816819F3E /* ClaudeHubMobile */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2B52279850ED201C01FBFC9F /* Build configuration list for PBXNativeTarget "ClaudeHubMobile" */;
+			buildPhases = (
+				3E7167BC1B22F1894BEB526B /* Sources */,
+				52845B8DD0A599B94EC23009 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ClaudeHubMobile;
+			packageProductDependencies = (
+				C733FAC24D59E2DDD471E65B /* ClaudeHubRemote */,
+				D1B7EB9703F07E784E44AE06 /* SwiftTerm */,
+			);
+			productName = ClaudeHubMobile;
+			productReference = 7CC01A41E1A2B3486F489CBE /* ClaudeHubMobile.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		581EEB51FAA093A410183076 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = 11DB7D6D41671772E8F4A002 /* Build configuration list for PBXProject "ClaudeHubMobile" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = A9245136B76A797E209C002A;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D75ABDD5D90375B166CD3795 /* XCRemoteSwiftPackageReference "SwiftTerm" */,
+				196D18D8EA5799E41847A752 /* XCLocalSwiftPackageReference "../../Packages/ClaudeHubRemote" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				747D63A9B91F92F816819F3E /* ClaudeHubMobile */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3E7167BC1B22F1894BEB526B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3CD93805E278E6B7CC07E64E /* ChatListView.swift in Sources */,
+				94CFA6B4B84835A3B7FEE880 /* ChatRowView.swift in Sources */,
+				5E8D60515970BDD05FB8D2B7 /* ClaudeHubMobileApp.swift in Sources */,
+				FB71A103FC36112A82E6626D /* MobileAppStore.swift in Sources */,
+				B861E42D3B835B690402015C /* MobileConnectionState.swift in Sources */,
+				85C97D66643E301BCAAC96EA /* MobileCredentialStore.swift in Sources */,
+				CC977CFF549FCB7BD1569976 /* MobileRelayClient.swift in Sources */,
+				11C31F50126F790816053C2A /* MobileRootView.swift in Sources */,
+				2A568438F80362EDD7DEB4B9 /* MobileSession.swift in Sources */,
+				39820AA244B4C04E01946F4C /* PairingSheet.swift in Sources */,
+				98B1F24A6C4B47F8A2ABB361 /* QRCodePairingParser.swift in Sources */,
+				CC17ECEFBE0427C99B9294DD /* QRCodeScannerView.swift in Sources */,
+				4BC18FBC18535F30CAB7CB55 /* RemoteTerminalView.swift in Sources */,
+				84CD2796C1116B2EAC0F724F /* TerminalScreenView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		01827CC35981A391CB37F5ED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "ClaudeHub Mobile";
+				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "ClaudeHub Mobile scans pairing QR codes from your Mac.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ClaudeHub Mobile discovers and connects to your paired ClaudeHub relay.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mariomoschetta.ClaudeHubMobile;
+				PRODUCT_NAME = ClaudeHubMobile;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 5.1;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		15D07CF251016217A7E59FD4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		15D94CFD7FDD96ED9067CAD5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		F83346E912BBA9CAF2B211CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "ClaudeHub Mobile";
+				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "ClaudeHub Mobile scans pairing QR codes from your Mac.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ClaudeHub Mobile discovers and connects to your paired ClaudeHub relay.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mariomoschetta.ClaudeHubMobile;
+				PRODUCT_NAME = ClaudeHubMobile;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 5.1;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		11DB7D6D41671772E8F4A002 /* Build configuration list for PBXProject "ClaudeHubMobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				15D07CF251016217A7E59FD4 /* Debug */,
+				15D94CFD7FDD96ED9067CAD5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		2B52279850ED201C01FBFC9F /* Build configuration list for PBXNativeTarget "ClaudeHubMobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				01827CC35981A391CB37F5ED /* Debug */,
+				F83346E912BBA9CAF2B211CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		196D18D8EA5799E41847A752 /* XCLocalSwiftPackageReference "../../Packages/ClaudeHubRemote" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../Packages/ClaudeHubRemote;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D75ABDD5D90375B166CD3795 /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.11.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C733FAC24D59E2DDD471E65B /* ClaudeHubRemote */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClaudeHubRemote;
+		};
+		D1B7EB9703F07E784E44AE06 /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D75ABDD5D90375B166CD3795 /* XCRemoteSwiftPackageReference "SwiftTerm" */;
+			productName = SwiftTerm;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 581EEB51FAA093A410183076 /* Project object */;
+}

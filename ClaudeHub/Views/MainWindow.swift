@@ -16,6 +16,7 @@ struct MainWindow: View {
     @State private var showBroadcast = false
     @State private var showTaskWizard = false
     @State private var showDashboard = false
+    @State private var isSidebarVisible = true
 
     @Query(filter: #Predicate<Session> { !$0.isArchived },
            sort: \Session.sortOrder)
@@ -23,9 +24,11 @@ struct MainWindow: View {
 
     var body: some View {
         HSplitView {
-            // Sidebar
-            SidebarView(selectedSessionID: $selectedSessionID)
-                .frame(minWidth: 240, idealWidth: 280, maxWidth: 360)
+            // Sidebar — togglable
+            if isSidebarVisible {
+                SidebarView(selectedSessionID: $selectedSessionID)
+                    .frame(minWidth: 240, idealWidth: 280, maxWidth: 360)
+            }
 
             // Detail: terminals live in a ZStack, show/hide by opacity
             ZStack {
@@ -39,7 +42,7 @@ struct MainWindow: View {
                 // Terminals for activated sessions — kept alive permanently
                 ForEach(activatedSessions, id: \.id) { session in
                     let isVisible = session.id == selectedSessionID && !showDashboard
-                    TerminalContainerView(session: session)
+                    TerminalContainerView(session: session, selectedSessionID: selectedSessionID)
                         .opacity(isVisible ? 1 : 0)
                         .allowsHitTesting(isVisible)
                 }
@@ -51,6 +54,18 @@ struct MainWindow: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .toolbar {
+            ToolbarItemGroup(placement: .navigation) {
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isSidebarVisible.toggle()
+                    }
+                }) {
+                    Image(systemName: "sidebar.left")
+                }
+                .help("Toggle Sidebar (⌘\\)")
+                .keyboardShortcut("\\", modifiers: .command)
+            }
+
             ToolbarItemGroup(placement: .primaryAction) {
                 Button(action: { showDashboard.toggle() }) {
                     Image(systemName: showDashboard ? "square.grid.2x2.fill" : "square.grid.2x2")
@@ -84,13 +99,30 @@ struct MainWindow: View {
             sessionManager.selectedSessionID = newValue
             if let id = newValue {
                 activatedSessionIDs.insert(id)
+                // Clear unread badge when user selects a session
+                if let session = sessions.first(where: { $0.id == id }), session.hasUnread {
+                    session.hasUnread = false
+                    updateDockBadge()
+                }
             }
+        }
+        .onChange(of: unreadCount) { _, _ in
+            updateDockBadge()
         }
     }
 
     /// Sessions that have been selected at least once — only these get a terminal.
     private var activatedSessions: [Session] {
         sessions.filter { activatedSessionIDs.contains($0.id) }
+    }
+
+    /// Number of sessions with unread notifications.
+    private var unreadCount: Int {
+        sessions.filter(\.hasUnread).count
+    }
+
+    private func updateDockBadge() {
+        NotificationManager.shared.updateDockBadge(unreadCount: unreadCount)
     }
 
     private var emptyState: some View {

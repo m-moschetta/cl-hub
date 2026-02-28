@@ -22,6 +22,9 @@ public class ClaudeTerminalView: LocalProcessTerminalView {
     /// Callback for sending input (used by ProcessManager).
     public var sendInputHandler: ((String) -> Void)?
 
+    /// Callback for raw terminal output, before any remote transport encoding.
+    public var onRawOutput: ((Data) -> Void)?
+
     public init(
         sessionID: UUID,
         theme: TerminalTheme = .dark,
@@ -162,6 +165,7 @@ public class ClaudeTerminalView: LocalProcessTerminalView {
         super.dataReceived(slice: slice)
         let data = Data(slice)
         outputParser.processData(data)
+        onRawOutput?(data)
     }
 
     // MARK: - Helpers
@@ -221,5 +225,24 @@ public class ClaudeTerminalView: LocalProcessTerminalView {
     public func sendCommand(_ command: String) {
         send(txt: command + "\n")
     }
-}
 
+    /// Resize the underlying pseudo-terminal using the requested character grid.
+    public func resizeTerminal(cols: Int, rows: Int) {
+        guard process.running, cols > 0, rows > 0 else { return }
+
+        var size = winsize(
+            ws_row: UInt16(clamping: rows),
+            ws_col: UInt16(clamping: cols),
+            ws_xpixel: UInt16(clamping: Int(frame.width)),
+            ws_ypixel: UInt16(clamping: Int(frame.height))
+        )
+
+        let result = PseudoTerminalHelpers.setWinSize(
+            masterPtyDescriptor: process.childfd,
+            windowSize: &size
+        )
+
+        guard result == 0 else { return }
+        getTerminal().resize(cols: cols, rows: rows)
+    }
+}

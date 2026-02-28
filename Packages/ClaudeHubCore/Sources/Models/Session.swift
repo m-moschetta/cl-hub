@@ -27,6 +27,9 @@ public final class Session {
     public var workingDirectory: String
     public var fontSizeOverride: Double?
 
+    // Unread badge (WhatsApp-style notification)
+    public var hasUnread: Bool = false
+
     // Process tracking
     public var lastPID: Int?
 

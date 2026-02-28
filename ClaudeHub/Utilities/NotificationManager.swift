@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import UserNotifications
 import ClaudeHubCore
 
@@ -8,6 +9,13 @@ final class NotificationManager {
     static let shared = NotificationManager()
 
     private init() {}
+
+    /// Update the dock badge with the count of unread sessions.
+    func updateDockBadge(unreadCount: Int) {
+        DispatchQueue.main.async {
+            NSApp.dockTile.badgeLabel = unreadCount > 0 ? "\(unreadCount)" : nil
+        }
+    }
 
     /// Request notification permissions.
     func requestAuthorization() {
@@ -22,6 +30,9 @@ final class NotificationManager {
 
     /// Notify when a session transitions from thinking to idle.
     func notifyCompletion(sessionName: String) {
+        // In-app sound (always plays)
+        NSSound(named: "Purr")?.play()
+
         guard UserDefaults.standard.bool(forKey: "notifyOnCompletion") else { return }
 
         let content = UNMutableNotificationContent()
@@ -40,6 +51,9 @@ final class NotificationManager {
 
     /// Notify on error.
     func notifyError(sessionName: String, preview: String) {
+        // In-app sound (always plays)
+        NSSound(named: "Basso")?.play()
+
         guard UserDefaults.standard.bool(forKey: "notifyOnError") else { return }
 
         let content = UNMutableNotificationContent()

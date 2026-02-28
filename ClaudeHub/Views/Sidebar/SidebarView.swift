@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 import ClaudeHubCore
 
 /// Main sidebar with session list, search, and groups.
@@ -17,6 +18,7 @@ struct SidebarView: View {
     @State private var showNewSession = false
     @State private var showNewGroup = false
     @State private var newGroupName = ""
+    @State private var draggedSessionID: UUID?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -49,6 +51,17 @@ struct SidebarView: View {
                         .contextMenu {
                             sessionContextMenu(for: session)
                         }
+                        .onDrag {
+                            draggedSessionID = session.id
+                            return NSItemProvider(object: session.id.uuidString as NSString)
+                        }
+                        .onDrop(of: [.text], delegate: SessionDropDelegate(
+                            targetSession: session,
+                            allSessions: ungrouped,
+                            draggedSessionID: $draggedSessionID,
+                            sessionManager: sessionManager
+                        ))
+                        .opacity(draggedSessionID == session.id ? 0.5 : 1)
                     }
 
                     // Grouped sessions
@@ -162,5 +175,44 @@ struct SidebarView: View {
             ScrollbackStore.shared.deleteScrollback(for: session.id)
             sessionManager.deleteSession(session)
         }
+    }
+}
+
+// MARK: - Drag & Drop
+
+/// Drop delegate that reorders sessions by swapping positions on hover.
+private struct SessionDropDelegate: DropDelegate {
+    let targetSession: Session
+    let allSessions: [Session]
+    @Binding var draggedSessionID: UUID?
+    let sessionManager: SessionManager
+
+    func dropEntered(info: DropInfo) {
+        guard let draggedID = draggedSessionID,
+              draggedID != targetSession.id,
+              let fromIndex = allSessions.firstIndex(where: { $0.id == draggedID }),
+              let toIndex = allSessions.firstIndex(where: { $0.id == targetSession.id })
+        else { return }
+
+        var reordered = allSessions
+        let item = reordered.remove(at: fromIndex)
+        reordered.insert(item, at: toIndex)
+
+        withAnimation(.easeInOut(duration: 0.2)) {
+            sessionManager.reorderSessions(reordered)
+        }
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggedSessionID = nil
+        return true
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func validateDrop(info: DropInfo) -> Bool {
+        draggedSessionID != nil
     }
 }

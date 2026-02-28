@@ -11,6 +11,7 @@ struct ClaudeHubApp: App {
     @StateObject private var sessionManager: SessionManager
     @StateObject private var processManager = ProcessManager()
     @StateObject private var orchestrationEngine: OrchestrationEngine
+    @StateObject private var remoteAgentService: RemoteAgentService
 
     // State for keyboard shortcuts
     @State private var selectedSessionID: UUID?
@@ -43,6 +44,10 @@ struct ClaudeHubApp: App {
                 processManager: pm,
                 sessionManager: sm
             ))
+            _remoteAgentService = StateObject(wrappedValue: RemoteAgentService(
+                sessionManager: sm,
+                processManager: pm
+            ))
         } catch {
             fatalError("Failed to create model container: \(error)")
         }
@@ -54,11 +59,13 @@ struct ClaudeHubApp: App {
                 .environmentObject(sessionManager)
                 .environmentObject(processManager)
                 .environmentObject(orchestrationEngine)
+                .environmentObject(remoteAgentService)
                 .frame(minWidth: 800, minHeight: 500)
                 .onAppear {
                     appDelegate.processManager = processManager
                     NotificationManager.shared.requestAuthorization()
                     cleanupStaleProcesses()
+                    remoteAgentService.connectIfConfigured()
                 }
         }
         .modelContainer(modelContainer)
@@ -81,6 +88,7 @@ struct ClaudeHubApp: App {
             MenuBarView()
                 .environmentObject(sessionManager)
                 .environmentObject(processManager)
+                .environmentObject(remoteAgentService)
         }
     }
 

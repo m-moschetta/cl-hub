@@ -1,0 +1,27 @@
+public enum RemoteMessageType {
+    public static let hostHello = "host_hello"
+    public static let hostRegister = "host_register"
+    public static let hostAuthenticated = "host_authenticated"
+    public static let challenge = "challenge"
+    public static let hostAuth = "host_auth"
+    public static let clientHello = "client_hello"
+    public static let clientAuth = "client_auth"
+    public static let clientAuthenticated = "client_authenticated"
+
+    public static let pairingCreate = "pairing_create"
+    public static let pairingCreated = "pairing_created"
+    public static let pairingRequest = "pairing_request"
+    public static let pairingPendingApproval = "pairing_pending_approval"
+    public static let pairingApprove = "pairing_approve"
+    public static let pairingSuccess = "pairing_success"
+
+    public static let listSessions = "list_sessions"
+    public static let sessionList = "session_list"
+    public static let openSession = "open_session"
+    public static let terminalSnapshot = "terminal_snapshot"
+    public static let terminalOutput = "terminal_output"
+    public static let terminalInput = "terminal_input"
+    public static let terminalInterrupt = "terminal_interrupt"
+    public static let terminalResize = "terminal_resize"
+    public static let sessionUpdated = "session_updated"
+}

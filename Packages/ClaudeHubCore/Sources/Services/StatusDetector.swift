@@ -120,17 +120,46 @@ public final class StatusDetector: @unchecked Sendable {
         lock.unlock()
     }
 
-    /// Extract a preview message from recent output (last meaningful line).
+    /// Noise patterns to skip in preview extraction.
+    private static let previewNoisePatterns: [String] = [
+        "⏺", "─", "━", "╭", "╰", "│", "├", "└",
+        "> ", "❯ ", "$ ",
+    ]
+
+    /// Extract a preview message from recent output (last meaningful lines).
     public func extractPreview() -> String? {
         lock.lock()
         let lines = recentLines
         lock.unlock()
 
-        return lines.last(where: { line in
+        // Collect up to 2 meaningful lines from the end
+        var meaningful: [String] = []
+        for line in lines.reversed() {
             let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
-            return !trimmed.isEmpty
-                && trimmed.count > 2
-                && !Self.thinkingPatterns.contains(where: { trimmed.contains($0) })
-        })
+            guard !trimmed.isEmpty, trimmed.count > 2 else { continue }
+
+            // Skip spinners
+            if Self.thinkingPatterns.contains(where: { trimmed.contains($0) }) { continue }
+
+            // Skip decorative/noise lines
+            let isNoise = Self.previewNoisePatterns.contains { noise in
+                trimmed.hasPrefix(noise) && trimmed.count < 6
+            }
+            if isNoise { continue }
+
+            // Clean up common prefixes
+            var cleaned = trimmed
+            // Strip leading tool markers but keep the description
+            if cleaned.hasPrefix("● ") {
+                // e.g. "● Read(file.swift)" → "Read(file.swift)"
+                cleaned = String(cleaned.dropFirst(2))
+            }
+
+            meaningful.insert(cleaned, at: 0)
+            if meaningful.count >= 2 { break }
+        }
+
+        guard !meaningful.isEmpty else { return nil }
+        return meaningful.joined(separator: " — ")
     }
 }

@@ -19,6 +19,7 @@ struct NewSessionSheet: View {
     private let presetCommands = [
         ("claude", "Claude Code"),
         ("opencode", "OpenCode"),
+        ("codex", "Codex"),
         ("zsh", "Terminal (zsh)"),
         ("bash", "Terminal (bash)"),
         ("custom", "Custom..."),

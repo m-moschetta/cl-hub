@@ -8,11 +8,18 @@ public final class ProcessManager: ObservableObject {
         public let sessionID: UUID
         public let pid: Int32
         public let sendInput: (String) -> Void
+        public let resize: (Int, Int) -> Void
 
-        public init(sessionID: UUID, pid: Int32, sendInput: @escaping (String) -> Void) {
+        public init(
+            sessionID: UUID,
+            pid: Int32,
+            sendInput: @escaping (String) -> Void,
+            resize: @escaping (Int, Int) -> Void = { _, _ in }
+        ) {
             self.sessionID = sessionID
             self.pid = pid
             self.sendInput = sendInput
+            self.resize = resize
         }
     }
 
@@ -33,6 +40,12 @@ public final class ProcessManager: ObservableObject {
     /// Send input text to a specific session's terminal.
     public func sendInput(_ text: String, to sessionID: UUID) {
         activeProcesses[sessionID]?.sendInput(text)
+    }
+
+    /// Resize a specific session's pseudo-terminal.
+    public func resizeTerminal(sessionID: UUID, cols: Int, rows: Int) {
+        guard cols > 0, rows > 0 else { return }
+        activeProcesses[sessionID]?.resize(cols, rows)
     }
 
     /// Broadcast a prompt to multiple sessions.

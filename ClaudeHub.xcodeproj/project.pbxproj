@@ -3,13 +3,15 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		1973E84C8296E4D791132210 /* NewSessionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CCF225BC48A5E5B94849A7D /* NewSessionSheet.swift */; };
 		1FD233D27BFDFA93437BD254 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 642A966A142857672D05FE02 /* SidebarView.swift */; };
 		24B010251B9D5021AF47F5CB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F7D5ABD7B5CEE983C86E68FD /* Assets.xcassets */; };
+		2B57FA7C5D2945DCA54C1E9A /* RemoteAgentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C41F8F8C7243F7AB1D3D5A /* RemoteAgentService.swift */; };
+		2D8E79F47CA24D8CAA74E7B8 /* RemoteRelayTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFE04E734B2646B4AAA9B8DD /* RemoteRelayTransport.swift */; };
 		31985E0C423F681EBFB3384F /* TerminalContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F8C5709E6C6A5EEEC6F92CE /* TerminalContainerView.swift */; };
 		49E6E55E831928909B2327C1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 823FDA824EEBF1C31C3A29BC /* AppDelegate.swift */; };
 		4D1D6AE7EEE7E5A38D45A7AD /* SessionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 089EF769CAAD63CEB8DBE4EC /* SessionRowView.swift */; };
@@ -18,6 +20,7 @@
 		6223662A7DD53289E54CF532 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B578A556518BE180D51169B5 /* NotificationManager.swift */; };
 		63266FA4A5D8AA428105D61E /* ClaudeHubTerminal in Frameworks */ = {isa = PBXBuildFile; productRef = 0D0D68F73B052BB21E0296D6 /* ClaudeHubTerminal */; };
 		67819BA976E1A0C456B97301 /* ClaudeHubApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 580D90907D5270EB87B19ECF /* ClaudeHubApp.swift */; };
+		6DE0405642244882A8857B66 /* ClaudeHubRemote in Frameworks */ = {isa = PBXBuildFile; productRef = A1CF45D17A2B4470A51A8C44 /* ClaudeHubRemote */; };
 		7776EF6DE126E96C4C824EDB /* KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65612804354FE8A4215FAC4E /* KeyboardShortcuts.swift */; };
 		8D3698085BF6016783B682DC /* SessionGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6A3DD52EC34D5C380FD1C8 /* SessionGroupView.swift */; };
 		8FF8BBF32C482DF95D39605D /* ClaudeHubCore in Frameworks */ = {isa = PBXBuildFile; productRef = CF6236E0958BF6D17E4BB311 /* ClaudeHubCore */; };
@@ -25,6 +28,7 @@
 		AB38E3C6A29FA4F02A2EA722 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC2D688EDEE1DCCFC5B9902 /* DashboardView.swift */; };
 		B64AEFBBEA3371C9BB7820C2 /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E46EDA9B38E64B20B92B5CF /* MainWindow.swift */; };
 		BF376FE73C08F9B715FFC476 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81030E0B3817A3F7A77E5036 /* SettingsView.swift */; };
+		C1D2E3F4A5B6C7D8E9F0A1B2 /* ChildProcessMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E3F4A5B6C7D8E9F0A1B2C3 /* ChildProcessMonitor.swift */; };
 		CBD874DECE03486DF54CD2EE /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = C99E2F394C1577041B89B00C /* SwiftTerm */; };
 		E03C3BB0396AE8C30C6AB0B0 /* TerminalRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B366ABA2EA31FC6DA6FFBE6A /* TerminalRepresentable.swift */; };
 /* End PBXBuildFile section */
@@ -42,15 +46,19 @@
 		642A966A142857672D05FE02 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		65612804354FE8A4215FAC4E /* KeyboardShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcuts.swift; sourceTree = "<group>"; };
 		6F8C5709E6C6A5EEEC6F92CE /* TerminalContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalContainerView.swift; sourceTree = "<group>"; };
+		76C41F8F8C7243F7AB1D3D5A /* RemoteAgentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteAgentService.swift; sourceTree = "<group>"; };
 		7E1C3D9FD251903F7B991153 /* ClaudeHubCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ClaudeHubCore; path = Packages/ClaudeHubCore; sourceTree = SOURCE_ROOT; };
 		81030E0B3817A3F7A77E5036 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		823FDA824EEBF1C31C3A29BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		9F3E3E2321CE92167A28A373 /* ClaudeHub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClaudeHub.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F3E3E2321CE92167A28A373 /* Cl.hub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cl.hub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AB6A3DD52EC34D5C380FD1C8 /* SessionGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGroupView.swift; sourceTree = "<group>"; };
+		AFE04E734B2646B4AAA9B8DD /* RemoteRelayTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRelayTransport.swift; sourceTree = "<group>"; };
 		B366ABA2EA31FC6DA6FFBE6A /* TerminalRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalRepresentable.swift; sourceTree = "<group>"; };
 		B4DCB626FF187F64EB64932E /* TerminalSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSplitView.swift; sourceTree = "<group>"; };
 		B578A556518BE180D51169B5 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		B5F5E8D7A8DD4A998D4F9A1E /* ClaudeHubRemote */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ClaudeHubRemote; path = Packages/ClaudeHubRemote; sourceTree = SOURCE_ROOT; };
 		C44AEC32CF76686A931B4E54 /* ClaudeHubTerminal */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ClaudeHubTerminal; path = Packages/ClaudeHubTerminal; sourceTree = SOURCE_ROOT; };
+		D2E3F4A5B6C7D8E9F0A1B2C3 /* ChildProcessMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildProcessMonitor.swift; sourceTree = "<group>"; };
 		F7D5ABD7B5CEE983C86E68FD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -60,6 +68,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8FF8BBF32C482DF95D39605D /* ClaudeHubCore in Frameworks */,
+				6DE0405642244882A8857B66 /* ClaudeHubRemote in Frameworks */,
 				63266FA4A5D8AA428105D61E /* ClaudeHubTerminal in Frameworks */,
 				CBD874DECE03486DF54CD2EE /* SwiftTerm in Frameworks */,
 			);
@@ -71,8 +80,11 @@
 		060B66A0B0B23F20D058D46A /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
+				D2E3F4A5B6C7D8E9F0A1B2C3 /* ChildProcessMonitor.swift */,
 				65612804354FE8A4215FAC4E /* KeyboardShortcuts.swift */,
 				B578A556518BE180D51169B5 /* NotificationManager.swift */,
+				76C41F8F8C7243F7AB1D3D5A /* RemoteAgentService.swift */,
+				AFE04E734B2646B4AAA9B8DD /* RemoteRelayTransport.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -89,7 +101,7 @@
 		1028CA98E6D08D07FED5E8A3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				9F3E3E2321CE92167A28A373 /* ClaudeHub.app */,
+				9F3E3E2321CE92167A28A373 /* Cl.hub.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -98,6 +110,7 @@
 			isa = PBXGroup;
 			children = (
 				7E1C3D9FD251903F7B991153 /* ClaudeHubCore */,
+				B5F5E8D7A8DD4A998D4F9A1E /* ClaudeHubRemote */,
 				C44AEC32CF76686A931B4E54 /* ClaudeHubTerminal */,
 			);
 			path = Packages;
@@ -202,11 +215,12 @@
 			name = ClaudeHub;
 			packageProductDependencies = (
 				CF6236E0958BF6D17E4BB311 /* ClaudeHubCore */,
+				A1CF45D17A2B4470A51A8C44 /* ClaudeHubRemote */,
 				0D0D68F73B052BB21E0296D6 /* ClaudeHubTerminal */,
 				C99E2F394C1577041B89B00C /* SwiftTerm */,
 			);
 			productName = ClaudeHub;
-			productReference = 9F3E3E2321CE92167A28A373 /* ClaudeHub.app */;
+			productReference = 9F3E3E2321CE92167A28A373 /* Cl.hub.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -231,9 +245,9 @@
 			packageReferences = (
 				453C4F68BCAABBB35507213F /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 				B5E430DFFA7D900826225462 /* XCLocalSwiftPackageReference "Packages/ClaudeHubCore" */,
+				D7FB50C6428B4497AF7134B8 /* XCLocalSwiftPackageReference "Packages/ClaudeHubRemote" */,
 				F20AA22B0EE42A462C9191D0 /* XCLocalSwiftPackageReference "Packages/ClaudeHubTerminal" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -260,12 +274,15 @@
 			files = (
 				49E6E55E831928909B2327C1 /* AppDelegate.swift in Sources */,
 				A7D9CB51DE17BACA6E62F7C0 /* BroadcastSheet.swift in Sources */,
+				C1D2E3F4A5B6C7D8E9F0A1B2 /* ChildProcessMonitor.swift in Sources */,
 				67819BA976E1A0C456B97301 /* ClaudeHubApp.swift in Sources */,
 				AB38E3C6A29FA4F02A2EA722 /* DashboardView.swift in Sources */,
 				7776EF6DE126E96C4C824EDB /* KeyboardShortcuts.swift in Sources */,
 				B64AEFBBEA3371C9BB7820C2 /* MainWindow.swift in Sources */,
 				1973E84C8296E4D791132210 /* NewSessionSheet.swift in Sources */,
 				6223662A7DD53289E54CF532 /* NotificationManager.swift in Sources */,
+				2B57FA7C5D2945DCA54C1E9A /* RemoteAgentService.swift in Sources */,
+				2D8E79F47CA24D8CAA74E7B8 /* RemoteRelayTransport.swift in Sources */,
 				8D3698085BF6016783B682DC /* SessionGroupView.swift in Sources */,
 				4D1D6AE7EEE7E5A38D45A7AD /* SessionRowView.swift in Sources */,
 				BF376FE73C08F9B715FFC476 /* SettingsView.swift in Sources */,
@@ -284,11 +301,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				AUTOMATION_APPLE_EVENTS = NO;
 				CODE_SIGN_ENTITLEMENTS = ClaudeHub/ClaudeHub.entitlements;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5RQLC57A8N;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				INFOPLIST_FILE = ClaudeHub/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Cl.hub;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -300,6 +327,13 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.claudehub.app;
 				PRODUCT_NAME = Cl.hub;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.10;
 			};
@@ -365,11 +399,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				AUTOMATION_APPLE_EVENTS = NO;
 				CODE_SIGN_ENTITLEMENTS = ClaudeHub/ClaudeHub.entitlements;
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5RQLC57A8N;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
 				INFOPLIST_FILE = ClaudeHub/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Cl.hub;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -381,6 +425,13 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.claudehub.app;
 				PRODUCT_NAME = Cl.hub;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
+				RUNTIME_EXCEPTION_ALLOW_JIT = NO;
+				RUNTIME_EXCEPTION_ALLOW_UNSIGNED_EXECUTABLE_MEMORY = NO;
+				RUNTIME_EXCEPTION_DEBUGGING_TOOL = NO;
+				RUNTIME_EXCEPTION_DISABLE_EXECUTABLE_PAGE_PROTECTION = NO;
+				RUNTIME_EXCEPTION_DISABLE_LIBRARY_VALIDATION = NO;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.10;
 			};
@@ -477,6 +528,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/ClaudeHubCore;
 		};
+		D7FB50C6428B4497AF7134B8 /* XCLocalSwiftPackageReference "Packages/ClaudeHubRemote" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/ClaudeHubRemote;
+		};
 		F20AA22B0EE42A462C9191D0 /* XCLocalSwiftPackageReference "Packages/ClaudeHubTerminal" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/ClaudeHubTerminal;
@@ -498,6 +553,10 @@
 		0D0D68F73B052BB21E0296D6 /* ClaudeHubTerminal */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ClaudeHubTerminal;
+		};
+		A1CF45D17A2B4470A51A8C44 /* ClaudeHubRemote */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClaudeHubRemote;
 		};
 		C99E2F394C1577041B89B00C /* SwiftTerm */ = {
 			isa = XCSwiftPackageProductDependency;
