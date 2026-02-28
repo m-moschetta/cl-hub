@@ -7,13 +7,23 @@ try LoggingSystem.bootstrap(from: &env)
 let app = Application(env)
 defer { app.shutdown() }
 
+// Railway / Render inject PORT env var — honour it if present
+if let portStr = Environment.get("PORT"), let port = Int(portStr) {
+    app.http.server.configuration.port = port
+    app.http.server.configuration.hostname = "0.0.0.0"
+}
+
+/// The relay's own public base URL — clients need this to reconnect after pairing.
+/// Set via RELAY_PUBLIC_URL env var, defaults to ws://localhost:8080
+let relayPublicURL = Environment.get("RELAY_PUBLIC_URL") ?? "ws://localhost:8080"
+
 let registry = RelayRegistry()
 app.storage[RelayRegistryKey.self] = registry
 
-configureRoutes(app, registry: registry)
+configureRoutes(app, registry: registry, relayPublicURL: relayPublicURL)
 try app.run()
 
-private func configureRoutes(_ app: Application, registry: RelayRegistry) {
+private func configureRoutes(_ app: Application, registry: RelayRegistry, relayPublicURL: String) {
     app.get { _ in
         "ClaudeHubRelay OK"
     }
@@ -27,7 +37,7 @@ private func configureRoutes(_ app: Application, registry: RelayRegistry) {
         registry.setHostSocket(ws, for: hostID)
 
         ws.onText { ws, text in
-            handleHostMessage(registry: registry, hostID: hostID, ws: ws, text: text)
+            handleHostMessage(registry: registry, hostID: hostID, ws: ws, text: text, relayPublicURL: relayPublicURL)
         }
 
         ws.onClose.whenComplete { _ in
@@ -66,17 +76,18 @@ private func handleHostMessage(
     registry: RelayRegistry,
     hostID: String,
     ws: WebSocket,
-    text: String
+    text: String,
+    relayPublicURL: String
 ) {
     guard let data = text.data(using: .utf8),
-          let header = try? decoder.decode(RemoteEnvelopeHeader.self, from: data)
+          let header = try? makeDecoder().decode(RemoteEnvelopeHeader.self, from: data)
     else {
         return
     }
 
     switch header.type {
     case RemoteMessageType.hostRegister:
-        guard let envelope = try? decoder.decode(RemoteEnvelope<HostRegisterPayload>.self, from: data) else { return }
+        guard let envelope = try? makeDecoder().decode(RemoteEnvelope<HostRegisterPayload>.self, from: data) else { return }
         registry.registerHost(envelope.payload, for: hostID)
 
     case RemoteMessageType.hostHello:
@@ -90,7 +101,7 @@ private func handleHostMessage(
         sendEnvelope(envelope, over: ws)
 
     case RemoteMessageType.hostAuth:
-        guard let envelope = try? decoder.decode(RemoteEnvelope<SignedChallengePayload>.self, from: data) else { return }
+        guard let envelope = try? makeDecoder().decode(RemoteEnvelope<SignedChallengePayload>.self, from: data) else { return }
         let isValid = registry.verifyHostSignature(
             hostID: hostID,
             nonce: envelope.payload.nonce,
@@ -110,7 +121,7 @@ private func handleHostMessage(
         }
 
     case RemoteMessageType.pairingCreate:
-        guard let envelope = try? decoder.decode(RemoteEnvelope<PairingCreatePayload>.self, from: data) else { return }
+        guard let envelope = try? makeDecoder().decode(RemoteEnvelope<PairingCreatePayload>.self, from: data) else { return }
         let challenge = registry.createPairingChallenge(
             for: hostID,
             ttl: TimeInterval(envelope.payload.ttlSeconds)
@@ -123,13 +134,13 @@ private func handleHostMessage(
                 challengeID: challenge.challengeID,
                 nonce: challenge.nonce,
                 expiresAt: challenge.expiresAt,
-                relayURL: ""
+                relayURL: relayPublicURL
             )
         )
         sendEnvelope(response, over: ws)
 
     case RemoteMessageType.pairingApprove:
-        guard let envelope = try? decoder.decode(RemoteEnvelope<PairingApprovePayload>.self, from: data),
+        guard let envelope = try? makeDecoder().decode(RemoteEnvelope<PairingApprovePayload>.self, from: data),
               let request = registry.approvePairing(
                 hostID: hostID,
                 clientID: envelope.payload.clientID,
@@ -153,6 +164,7 @@ private func handleHostMessage(
 
     case RemoteMessageType.sessionList,
          RemoteMessageType.terminalOutput,
+         RemoteMessageType.terminalSnapshot,
          RemoteMessageType.sessionUpdated:
         if let clientSocket = registry.clientSocket(for: header.target.id) {
             clientSocket.send(text)
@@ -170,14 +182,14 @@ private func handleClientMessage(
     text: String
 ) {
     guard let data = text.data(using: .utf8),
-          let header = try? decoder.decode(RemoteEnvelopeHeader.self, from: data)
+          let header = try? makeDecoder().decode(RemoteEnvelopeHeader.self, from: data)
     else {
         return
     }
 
     switch header.type {
     case RemoteMessageType.pairingRequest:
-        guard let envelope = try? decoder.decode(RemoteEnvelope<PairingRequestPayload>.self, from: data),
+        guard let envelope = try? makeDecoder().decode(RemoteEnvelope<PairingRequestPayload>.self, from: data),
               let request = registry.beginPairingRequest(envelope.payload, clientID: clientID),
               let hostSocket = registry.hostSocket(for: request.hostID)
         else { return }
@@ -196,7 +208,7 @@ private func handleClientMessage(
         sendEnvelope(pending, over: hostSocket)
 
     case RemoteMessageType.clientHello:
-        guard let envelope = try? decoder.decode(RemoteEnvelope<ClientHelloPayload>.self, from: data),
+        guard let envelope = try? makeDecoder().decode(RemoteEnvelope<ClientHelloPayload>.self, from: data),
               let challenge = registry.createClientChallenge(clientID: clientID, hostID: envelope.payload.hostID)
         else {
             ws.close(promise: nil)
@@ -212,7 +224,7 @@ private func handleClientMessage(
         sendEnvelope(response, over: ws)
 
     case RemoteMessageType.clientAuth:
-        guard let envelope = try? decoder.decode(RemoteEnvelope<SignedChallengePayload>.self, from: data) else { return }
+        guard let envelope = try? makeDecoder().decode(RemoteEnvelope<SignedChallengePayload>.self, from: data) else { return }
         let isValid = registry.verifyClientSignature(
             clientID: clientID,
             nonce: envelope.payload.nonce,
@@ -254,7 +266,7 @@ private func sendEnvelope<Payload: Codable & Sendable>(
 }
 
 private func encode<Payload: Codable & Sendable>(_ envelope: RemoteEnvelope<Payload>) throws -> String {
-    let data = try encoder.encode(envelope)
+    let data = try makeEncoder().encode(envelope)
     guard let text = String(data: data, encoding: .utf8) else {
         throw Abort(.internalServerError, reason: "Unable to encode envelope")
     }
@@ -267,14 +279,14 @@ private struct RelayRegistryKey: StorageKey {
 
 private let relayPeer = RemotePeer(kind: .relay, id: "relay")
 
-private let encoder: JSONEncoder = {
+private func makeEncoder() -> JSONEncoder {
     let encoder = JSONEncoder()
     encoder.dateEncodingStrategy = .iso8601
     return encoder
-}()
+}
 
-private let decoder: JSONDecoder = {
+private func makeDecoder() -> JSONDecoder {
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .iso8601
     return decoder
-}()
+}
