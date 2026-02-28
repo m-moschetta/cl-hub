@@ -81,9 +81,7 @@ private func handleHostMessage(
 ) {
     guard let data = text.data(using: .utf8),
           let header = try? makeDecoder().decode(RemoteEnvelopeHeader.self, from: data)
-    else {
-        return
-    }
+    else { return }
 
     switch header.type {
     case RemoteMessageType.hostRegister:
@@ -92,13 +90,12 @@ private func handleHostMessage(
 
     case RemoteMessageType.hostHello:
         let challenge = registry.createChallenge(for: hostID)
-        let envelope = RemoteEnvelope(
+        sendJSON(
             type: RemoteMessageType.challenge,
-            source: relayPeer,
             target: RemotePeer(kind: .host, id: hostID),
-            payload: ChallengePayload(nonce: challenge.nonce, expiresAt: challenge.expiresAt)
+            payload: ["nonce": challenge.nonce, "expires_at": isoDate(challenge.expiresAt)],
+            over: ws
         )
-        sendEnvelope(envelope, over: ws)
 
     case RemoteMessageType.hostAuth:
         guard let envelope = try? makeDecoder().decode(RemoteEnvelope<SignedChallengePayload>.self, from: data) else { return }
@@ -109,13 +106,12 @@ private func handleHostMessage(
         )
 
         if isValid {
-            let ack = RemoteEnvelope(
+            sendJSON(
                 type: RemoteMessageType.hostAuthenticated,
-                source: relayPeer,
                 target: RemotePeer(kind: .host, id: hostID),
-                payload: HostAuthenticatedPayload()
+                payload: [:],
+                over: ws
             )
-            sendEnvelope(ack, over: ws)
         } else {
             ws.close(promise: nil)
         }
@@ -126,18 +122,17 @@ private func handleHostMessage(
             for: hostID,
             ttl: TimeInterval(envelope.payload.ttlSeconds)
         )
-        let response = RemoteEnvelope(
+        sendJSON(
             type: RemoteMessageType.pairingCreated,
-            source: relayPeer,
             target: RemotePeer(kind: .host, id: hostID),
-            payload: PairingCreatedPayload(
-                challengeID: challenge.challengeID,
-                nonce: challenge.nonce,
-                expiresAt: challenge.expiresAt,
-                relayURL: relayPublicURL
-            )
+            payload: [
+                "challenge_id": challenge.challengeID,
+                "nonce": challenge.nonce,
+                "expires_at": isoDate(challenge.expiresAt),
+                "relay_url": relayPublicURL,
+            ],
+            over: ws
         )
-        sendEnvelope(response, over: ws)
 
     case RemoteMessageType.pairingApprove:
         guard let envelope = try? makeDecoder().decode(RemoteEnvelope<PairingApprovePayload>.self, from: data),
@@ -150,22 +145,22 @@ private func handleHostMessage(
               let registration = registry.hostRegistration(for: hostID)
         else { return }
 
-        let success = RemoteEnvelope(
+        sendJSON(
             type: RemoteMessageType.pairingSuccess,
-            source: relayPeer,
             target: RemotePeer(kind: .client, id: request.clientID),
-            payload: PairingSuccessPayload(
-                hostID: hostID,
-                hostName: registration.displayName,
-                hostPublicKey: registration.publicKey
-            )
+            payload: [
+                "host_id": hostID,
+                "host_name": registration.displayName,
+                "host_public_key": registration.publicKey,
+            ],
+            over: clientSocket
         )
-        sendEnvelope(success, over: clientSocket)
 
     case RemoteMessageType.sessionList,
          RemoteMessageType.terminalOutput,
          RemoteMessageType.terminalSnapshot,
          RemoteMessageType.sessionUpdated:
+        // Pass-through: forward raw JSON to the target client
         if let clientSocket = registry.clientSocket(for: header.target.id) {
             clientSocket.send(text)
         }
@@ -183,9 +178,7 @@ private func handleClientMessage(
 ) {
     guard let data = text.data(using: .utf8),
           let header = try? makeDecoder().decode(RemoteEnvelopeHeader.self, from: data)
-    else {
-        return
-    }
+    else { return }
 
     switch header.type {
     case RemoteMessageType.pairingRequest:
@@ -194,18 +187,17 @@ private func handleClientMessage(
               let hostSocket = registry.hostSocket(for: request.hostID)
         else { return }
 
-        let pending: RemoteEnvelope<PairingPendingApprovalPayload> = RemoteEnvelope(
+        sendJSON(
             type: RemoteMessageType.pairingPendingApproval,
-            source: relayPeer,
             target: RemotePeer(kind: .host, id: request.hostID),
-            payload: PairingPendingApprovalPayload(
-                clientID: request.clientID,
-                deviceName: request.deviceName,
-                publicKey: request.publicKey,
-                challengeID: request.challengeID
-            )
+            payload: [
+                "client_id": request.clientID,
+                "device_name": request.deviceName,
+                "public_key": request.publicKey,
+                "challenge_id": request.challengeID,
+            ],
+            over: hostSocket
         )
-        sendEnvelope(pending, over: hostSocket)
 
     case RemoteMessageType.clientHello:
         guard let envelope = try? makeDecoder().decode(RemoteEnvelope<ClientHelloPayload>.self, from: data),
@@ -215,13 +207,12 @@ private func handleClientMessage(
             return
         }
 
-        let response = RemoteEnvelope(
+        sendJSON(
             type: RemoteMessageType.challenge,
-            source: relayPeer,
             target: RemotePeer(kind: .client, id: clientID),
-            payload: ChallengePayload(nonce: challenge.nonce, expiresAt: challenge.expiresAt)
+            payload: ["nonce": challenge.nonce, "expires_at": isoDate(challenge.expiresAt)],
+            over: ws
         )
-        sendEnvelope(response, over: ws)
 
     case RemoteMessageType.clientAuth:
         guard let envelope = try? makeDecoder().decode(RemoteEnvelope<SignedChallengePayload>.self, from: data) else { return }
@@ -232,13 +223,12 @@ private func handleClientMessage(
         )
 
         if isValid {
-            let ack = RemoteEnvelope(
+            sendJSON(
                 type: RemoteMessageType.clientAuthenticated,
-                source: relayPeer,
                 target: RemotePeer(kind: .client, id: clientID),
-                payload: ClientAuthenticatedPayload()
+                payload: [:],
+                over: ws
             )
-            sendEnvelope(ack, over: ws)
         } else {
             ws.close(promise: nil)
         }
@@ -248,6 +238,7 @@ private func handleClientMessage(
          RemoteMessageType.terminalInput,
          RemoteMessageType.terminalInterrupt,
          RemoteMessageType.terminalResize:
+        // Pass-through: forward raw JSON to the target host
         if let hostSocket = registry.hostSocket(for: header.target.id) {
             hostSocket.send(text)
         }
@@ -257,36 +248,42 @@ private func handleClientMessage(
     }
 }
 
-private func sendEnvelope<Payload: Codable & Sendable>(
-    _ envelope: RemoteEnvelope<Payload>,
+// MARK: - Helpers
+
+/// Build and send a JSON envelope using JSONSerialization (avoids JSONEncoder deadlock on NIO).
+private func sendJSON(
+    type: String,
+    target: RemotePeer,
+    payload: [String: Any],
     over ws: WebSocket
 ) {
-    guard let text = try? encode(envelope) else { return }
+    let dict: [String: Any] = [
+        "v": 1,
+        "type": type,
+        "message_id": UUID().uuidString,
+        "timestamp": isoDate(Date()),
+        "source": ["kind": "relay", "id": "relay"],
+        "target": ["kind": target.kind.rawValue, "id": target.id],
+        "payload": payload,
+    ]
+    guard let data = try? JSONSerialization.data(withJSONObject: dict),
+          let text = String(data: data, encoding: .utf8)
+    else { return }
     ws.send(text)
 }
 
-private func encode<Payload: Codable & Sendable>(_ envelope: RemoteEnvelope<Payload>) throws -> String {
-    let data = try makeEncoder().encode(envelope)
-    guard let text = String(data: data, encoding: .utf8) else {
-        throw Abort(.internalServerError, reason: "Unable to encode envelope")
-    }
-    return text
-}
-
-private struct RelayRegistryKey: StorageKey {
-    typealias Value = RelayRegistry
-}
-
-private let relayPeer = RemotePeer(kind: .relay, id: "relay")
-
-private func makeEncoder() -> JSONEncoder {
-    let encoder = JSONEncoder()
-    encoder.dateEncodingStrategy = .iso8601
-    return encoder
+private func isoDate(_ date: Date) -> String {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return f.string(from: date)
 }
 
 private func makeDecoder() -> JSONDecoder {
     let decoder = JSONDecoder()
     decoder.dateDecodingStrategy = .iso8601
     return decoder
+}
+
+private struct RelayRegistryKey: StorageKey {
+    typealias Value = RelayRegistry
 }
