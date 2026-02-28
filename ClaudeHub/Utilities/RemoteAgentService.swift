@@ -1,4 +1,6 @@
+import AppKit
 import Combine
+import CoreImage
 import CryptoKit
 import Foundation
 import ClaudeHubCore
@@ -11,6 +13,10 @@ final class RemoteAgentService: ObservableObject {
     @Published private(set) var lastReceivedMessage: String?
     @Published private(set) var lastTerminalOutput: TerminalOutputPayload?
     @Published private(set) var isAuthenticated = false
+    @Published private(set) var pairingQRImage: NSImage?
+    @Published private(set) var pairingQRPayloadJSON: String?
+    @Published private(set) var isPairingActive = false
+    @Published private(set) var pairingError: String?
 
     let hostID: String
     let relayURL: String
@@ -20,8 +26,10 @@ final class RemoteAgentService: ObservableObject {
     private let transport: RemoteRelayTransport
     private var cancellables: Set<AnyCancellable> = []
     private let signingKey = P256.Signing.PrivateKey()
-    private var activeClientIDs: Set<String> = []
+    private(set) var activeClientIDs: Set<String> = []
     private var requestedTerminalSizes: [UUID: (cols: Int, rows: Int)] = [:]
+    private var pendingPairingRequest = false
+    private var pairingTimeoutTask: Task<Void, Never>?
 
     init(
         sessionManager: SessionManager,
@@ -55,12 +63,63 @@ final class RemoteAgentService: ObservableObject {
 
     func connect() {
         isAuthenticated = false
-        transport.connect(to: relayURL)
+        transport.connect(to: relayURL, hostID: hostID)
     }
 
     func disconnect() {
         transport.disconnect()
         isAuthenticated = false
+        isPairingActive = false
+        pairingQRImage = nil
+        pairingQRPayloadJSON = nil
+    }
+
+    /// Ask the relay to create a pairing challenge, then generate a QR code from the response.
+    func requestPairing() {
+        pairingError = nil
+
+        guard !relayURL.isEmpty else {
+            pairingError = "No relay URL configured. Set it in Settings → Remote."
+            return
+        }
+
+        guard isAuthenticated else {
+            // If not connected yet, connect first
+            connect()
+            // Will retry after auth
+            pendingPairingRequest = true
+            startPairingTimeout()
+            return
+        }
+
+        isPairingActive = true
+        startPairingTimeout()
+        send(
+            type: RemoteMessageType.pairingCreate,
+            target: relayPeer,
+            payload: PairingCreatePayload(ttlSeconds: 120)
+        )
+    }
+
+    func cancelPairing() {
+        isPairingActive = false
+        pairingQRImage = nil
+        pairingQRPayloadJSON = nil
+        pairingError = nil
+        pairingTimeoutTask?.cancel()
+        pairingTimeoutTask = nil
+    }
+
+    private func startPairingTimeout() {
+        pairingTimeoutTask?.cancel()
+        pairingTimeoutTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(15))
+            guard !Task.isCancelled else { return }
+            guard let self, self.pairingQRImage == nil, self.isPairingActive || self.pendingPairingRequest else { return }
+            self.pairingError = "Timeout: could not reach relay at \(self.relayURL). Check Settings → Remote."
+            self.isPairingActive = false
+            self.pendingPairingRequest = false
+        }
     }
 
     func makeHostRegisterPayload(publicKey: String, displayName: String? = nil) -> HostRegisterPayload {
@@ -206,6 +265,9 @@ final class RemoteAgentService: ObservableObject {
         case RemoteMessageType.terminalResize:
             guard let envelope = try? Self.decoder.decode(RemoteEnvelope<TerminalResizePayload>.self, from: data) else { return }
             handleTerminalResizeRequest(envelope)
+        case RemoteMessageType.pairingCreated:
+            guard let envelope = try? Self.decoder.decode(RemoteEnvelope<PairingCreatedPayload>.self, from: data) else { return }
+            handlePairingCreated(envelope.payload)
         case RemoteMessageType.pairingPendingApproval:
             guard let envelope = try? Self.decoder.decode(RemoteEnvelope<PairingPendingApprovalPayload>.self, from: data) else { return }
             handlePairingPendingApproval(envelope.payload)
@@ -227,6 +289,12 @@ final class RemoteAgentService: ObservableObject {
         // Until the relay emits an explicit auth ack, keep the UI usable.
         isAuthenticated = true
         connectionState = .connected
+
+        // If a pairing was requested before auth completed, do it now
+        if pendingPairingRequest {
+            pendingPairingRequest = false
+            requestPairing()
+        }
     }
 
     private func sendHostHello() {
@@ -294,8 +362,54 @@ final class RemoteAgentService: ObservableObject {
         handleTerminalResize(envelope.payload)
     }
 
+    private func handlePairingCreated(_ payload: PairingCreatedPayload) {
+        // Use the relay URL from the response (the relay knows its own public address)
+        // but fall back to our configured relay URL if empty
+        let effectiveRelayURL = payload.relayURL.isEmpty ? relayURL : payload.relayURL
+
+        let qrPayload = PairingQRCodePayload(
+            relayURL: effectiveRelayURL,
+            hostID: hostID,
+            challengeID: payload.challengeID,
+            nonce: payload.nonce,
+            expiresAt: payload.expiresAt
+        )
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        guard let jsonData = try? encoder.encode(qrPayload),
+              let json = String(data: jsonData, encoding: .utf8) else { return }
+
+        pairingTimeoutTask?.cancel()
+        pairingTimeoutTask = nil
+        pairingError = nil
+        pairingQRPayloadJSON = json
+        pairingQRImage = generateQRCode(from: json)
+    }
+
+    private func generateQRCode(from string: String) -> NSImage? {
+        guard let data = string.data(using: .utf8),
+              let filter = CIFilter(name: "CIQRCodeGenerator") else { return nil }
+
+        filter.setValue(data, forKey: "inputMessage")
+        filter.setValue("H", forKey: "inputCorrectionLevel")
+
+        guard let ciImage = filter.outputImage else { return nil }
+
+        // Scale up the tiny CIImage for display
+        let scale = CGAffineTransform(scaleX: 10, y: 10)
+        let scaledImage = ciImage.transformed(by: scale)
+
+        let rep = NSCIImageRep(ciImage: scaledImage)
+        let nsImage = NSImage(size: rep.size)
+        nsImage.addRepresentation(rep)
+        return nsImage
+    }
+
     private func handlePairingPendingApproval(_ payload: PairingPendingApprovalPayload) {
         activeClientIDs.insert(payload.clientID)
+
+        // Auto-approve pairing request
         send(
             type: RemoteMessageType.pairingApprove,
             target: relayPeer,
@@ -305,6 +419,11 @@ final class RemoteAgentService: ObservableObject {
                 signature: signNonce(payload.challengeID)
             )
         )
+
+        // Dismiss QR code — pairing is complete
+        isPairingActive = false
+        pairingQRImage = nil
+        pairingQRPayloadJSON = nil
     }
 
     private func signNonce(_ nonce: String) -> String {

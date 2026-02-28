@@ -8,6 +8,8 @@ struct SettingsView: View {
     @AppStorage("notifyOnCompletion") private var notifyOnCompletion: Bool = true
     @AppStorage("notifyOnError") private var notifyOnError: Bool = true
     @AppStorage("maxScrollbackMB") private var maxScrollbackMB: Double = 50.0
+    @AppStorage("relayURL") private var relayURL: String = ""
+    @AppStorage("hostID") private var hostID: String = ""
 
     var body: some View {
         TabView {
@@ -19,8 +21,11 @@ struct SettingsView: View {
 
             notificationSettings
                 .tabItem { Label("Notifications", systemImage: "bell") }
+
+            remoteSettings
+                .tabItem { Label("Remote", systemImage: "iphone.and.arrow.forward") }
         }
-        .frame(width: 450, height: 300)
+        .frame(width: 450, height: 340)
     }
 
     private var generalSettings: some View {
@@ -76,5 +81,42 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    private var remoteSettings: some View {
+        Form {
+            Section("Relay Server") {
+                TextField("Relay URL", text: $relayURL, prompt: Text("https://your-relay.example.com"))
+                    .help("WebSocket URL of your ClaudeHubRelay server")
+                    .onSubmit { relayURL = relayURL.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .onChange(of: relayURL) { _, newValue in
+                        let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if trimmed != newValue { relayURL = trimmed }
+                    }
+
+                HStack {
+                    Text("Host ID")
+                    Spacer()
+                    Text(currentHostID)
+                        .font(.system(size: 11, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                }
+
+                Text("Connect the iOS app by scanning the pairing QR code from the toolbar.")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .formStyle(.grouped)
+        .onAppear {
+            if hostID.isEmpty {
+                hostID = UUID().uuidString
+            }
+        }
+    }
+
+    private var currentHostID: String {
+        hostID.isEmpty ? "—" : String(hostID.prefix(8)) + "…"
     }
 }
