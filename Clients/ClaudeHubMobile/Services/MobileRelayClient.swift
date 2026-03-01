@@ -15,6 +15,8 @@ final class MobileRelayClient: NSObject, ObservableObject {
     var onClientAuthenticated: ((PairedHostRecord) -> Void)?
     var onStatusText: ((String) -> Void)?
 
+    var onDisconnected: (() -> Void)?
+
     private var webSocketTask: URLSessionWebSocketTask?
     private let session: URLSession
     private let credentialStore: MobileCredentialStore
@@ -22,6 +24,13 @@ final class MobileRelayClient: NSObject, ObservableObject {
     private let signingKey: P256.Signing.PrivateKey
     private var hostID: String?
     private var activeRelayURL: String?
+
+    // Keepalive & auto-reconnect
+    private var pingTask: Task<Void, Never>?
+    private var reconnectTask: Task<Void, Never>?
+    private var reconnectAttempt = 0
+    private let maxReconnectDelay: TimeInterval = 30
+    private var isAuthenticated = false
 
     override init() {
         let credentialStore = MobileCredentialStore()
@@ -118,6 +127,11 @@ final class MobileRelayClient: NSObject, ObservableObject {
     }
 
     func disconnect() {
+        pingTask?.cancel()
+        pingTask = nil
+        reconnectTask?.cancel()
+        reconnectTask = nil
+        isAuthenticated = false
         webSocketTask?.cancel(with: .normalClosure, reason: nil)
         webSocketTask = nil
     }
@@ -141,7 +155,13 @@ final class MobileRelayClient: NSObject, ObservableObject {
                     }
                     self.receiveLoop()
                 case .failure(let error):
+                    self.pingTask?.cancel()
+                    self.pingTask = nil
+                    self.isAuthenticated = false
+                    self.webSocketTask = nil
                     self.onStatusText?("Disconnected: \(error.localizedDescription)")
+                    self.onDisconnected?()
+                    self.scheduleReconnect()
                 }
             }
         }
@@ -219,6 +239,10 @@ final class MobileRelayClient: NSObject, ObservableObject {
 
     private func handleAuthenticated(_ payload: ClientAuthenticatedPayload) {
         _ = payload
+        isAuthenticated = true
+        reconnectAttempt = 0
+        startPingLoop()
+
         if let record = credentialStore.pairedHost() {
             onClientAuthenticated?(record)
             onStatusText?("Connected to \(record.hostName)")
@@ -297,6 +321,59 @@ final class MobileRelayClient: NSObject, ObservableObject {
 
     private var publicKeyBase64: String {
         signingKey.publicKey.rawRepresentation.base64EncodedString()
+    }
+
+    // MARK: - Keepalive Ping
+
+    private func startPingLoop() {
+        pingTask?.cancel()
+        pingTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(25))
+                guard !Task.isCancelled, let self, let task = self.webSocketTask else { break }
+                task.sendPing { error in
+                    if let error {
+                        Task { @MainActor in
+                            guard let self else { return }
+                            self.pingTask?.cancel()
+                            self.pingTask = nil
+                            self.isAuthenticated = false
+                            self.webSocketTask?.cancel(with: .abnormalClosure, reason: nil)
+                            self.webSocketTask = nil
+                            self.onStatusText?("Connection lost")
+                            self.onDisconnected?()
+                            self.scheduleReconnect()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Auto-Reconnect
+
+    private func scheduleReconnect() {
+        guard credentialStore.pairedHost() != nil else { return }
+        reconnectTask?.cancel()
+
+        reconnectAttempt += 1
+        let delay = min(pow(2.0, Double(reconnectAttempt - 1)), maxReconnectDelay)
+
+        reconnectTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(delay))
+            guard !Task.isCancelled, let self else { return }
+            self.onStatusText?("Reconnecting…")
+            self.reconnectIfPossible()
+        }
+    }
+
+    /// Called when the app returns to foreground
+    func reconnectIfNeeded() {
+        guard webSocketTask == nil, credentialStore.pairedHost() != nil else { return }
+        reconnectAttempt = 0
+        reconnectTask?.cancel()
+        onStatusText?("Reconnecting…")
+        reconnectIfPossible()
     }
 
     private static let encoder: JSONEncoder = {

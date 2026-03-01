@@ -55,6 +55,10 @@ final class MobileAppStore: ObservableObject {
             }
         }
 
+        relayClient.onDisconnected = { [weak self] in
+            self?.connectionState = .disconnected
+        }
+
         relayClient.onProjectPathsList = { [weak self] payload in
             self?.recentProjectPaths = payload.recentPaths
             self?.hostGroups = payload.groups
@@ -112,6 +116,13 @@ final class MobileAppStore: ObservableObject {
         connectionState = .connecting
         statusText = "Reconnecting…"
         relayClient.reconnectIfPossible()
+    }
+
+    /// Called when the app returns to foreground — reconnects if the socket died
+    func reconnectIfNeeded() {
+        guard connectionState != .authenticated else { return }
+        connectionState = .connecting
+        relayClient.reconnectIfNeeded()
     }
 
     func refreshSessions() {

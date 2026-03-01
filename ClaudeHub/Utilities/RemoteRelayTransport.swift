@@ -16,6 +16,14 @@ final class RemoteRelayTransport: ObservableObject {
     /// Guard against stale callbacks from previous connection attempts.
     private var connectionGeneration: UInt64 = 0
 
+    // Keepalive & auto-reconnect
+    private var pingTask: Task<Void, Never>?
+    private var reconnectTask: Task<Void, Never>?
+    private var lastRelayURL: String?
+    private var lastHostID: String?
+    private var reconnectAttempt = 0
+    private let maxReconnectDelay: TimeInterval = 30
+
     init(session: URLSession = .shared) {
         self.session = session
     }
@@ -60,6 +68,12 @@ final class RemoteRelayTransport: ObservableObject {
 
         disconnect()
 
+        lastRelayURL = relayURL
+        lastHostID = hostID
+        reconnectAttempt = 0
+        reconnectTask?.cancel()
+        reconnectTask = nil
+
         connectionGeneration &+= 1
         let gen = connectionGeneration
 
@@ -78,9 +92,12 @@ final class RemoteRelayTransport: ObservableObject {
                     self.connectionState = .disconnected
                     self.webSocketTask?.cancel(with: .abnormalClosure, reason: nil)
                     self.webSocketTask = nil
+                    self.scheduleReconnect()
                 } else {
                     logger.info("WebSocket connected (ping OK) — starting receive loop")
                     self.connectionState = .connected
+                    self.reconnectAttempt = 0
+                    self.startPingLoop(generation: gen)
                     self.receiveNextMessage(generation: gen)
                 }
             }
@@ -88,6 +105,10 @@ final class RemoteRelayTransport: ObservableObject {
     }
 
     func disconnect() {
+        pingTask?.cancel()
+        pingTask = nil
+        reconnectTask?.cancel()
+        reconnectTask = nil
         webSocketTask?.cancel(with: .normalClosure, reason: nil)
         webSocketTask = nil
         connectionState = .disconnected
@@ -163,10 +184,58 @@ final class RemoteRelayTransport: ObservableObject {
                     self.receiveNextMessage(generation: gen)
                 case .failure(let error):
                     logger.error("WebSocket receive failed: \(error.localizedDescription, privacy: .public)")
+                    self.pingTask?.cancel()
+                    self.pingTask = nil
                     self.connectionState = .disconnected
                     self.webSocketTask = nil
+                    self.scheduleReconnect()
                 }
             }
+        }
+    }
+
+    // MARK: - Keepalive Ping
+
+    private func startPingLoop(generation gen: UInt64) {
+        pingTask?.cancel()
+        pingTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(25))
+                guard !Task.isCancelled else { break }
+                guard let self, self.connectionGeneration == gen, let task = self.webSocketTask else { break }
+                task.sendPing { error in
+                    if let error {
+                        Task { @MainActor in
+                            guard let self, self.connectionGeneration == gen else { return }
+                            logger.warning("Keepalive ping failed: \(error.localizedDescription, privacy: .public)")
+                            self.pingTask?.cancel()
+                            self.pingTask = nil
+                            self.connectionState = .disconnected
+                            self.webSocketTask?.cancel(with: .abnormalClosure, reason: nil)
+                            self.webSocketTask = nil
+                            self.scheduleReconnect()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Auto-Reconnect
+
+    private func scheduleReconnect() {
+        guard let lastRelayURL, !lastRelayURL.isEmpty else { return }
+        reconnectTask?.cancel()
+
+        reconnectAttempt += 1
+        let delay = min(pow(2.0, Double(reconnectAttempt - 1)), maxReconnectDelay)
+        logger.info("Scheduling reconnect attempt \(self.reconnectAttempt) in \(delay)s")
+
+        reconnectTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(delay))
+            guard !Task.isCancelled, let self else { return }
+            logger.info("Auto-reconnecting…")
+            self.connect(to: self.lastRelayURL!, hostID: self.lastHostID)
         }
     }
 
