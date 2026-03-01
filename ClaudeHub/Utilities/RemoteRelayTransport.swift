@@ -86,7 +86,7 @@ final class RemoteRelayTransport: ObservableObject {
         // Use ping to confirm the connection is actually established before receiving
         task.sendPing { [weak self] error in
             Task { @MainActor in
-                guard let self, self.connectionGeneration == gen else { return }
+                guard let self = self, self.connectionGeneration == gen else { return }
                 if let error {
                     logger.error("WebSocket ping failed: \(error.localizedDescription, privacy: .public)")
                     self.connectionState = .disconnected
@@ -164,7 +164,7 @@ final class RemoteRelayTransport: ObservableObject {
 
         webSocketTask.receive { [weak self] result in
             Task { @MainActor in
-                guard let self, self.connectionGeneration == gen else { return }
+                guard let self = self, self.connectionGeneration == gen else { return }
 
                 switch result {
                 case .success(let message):
@@ -203,9 +203,9 @@ final class RemoteRelayTransport: ObservableObject {
                 try? await Task.sleep(for: .seconds(25))
                 guard !Task.isCancelled else { break }
                 guard let self, self.connectionGeneration == gen, let task = self.webSocketTask else { break }
-                task.sendPing { error in
+                task.sendPing { [weak self] error in
                     if let error {
-                        Task { @MainActor in
+                        Task { @MainActor [weak self] in
                             guard let self, self.connectionGeneration == gen else { return }
                             logger.warning("Keepalive ping failed: \(error.localizedDescription, privacy: .public)")
                             self.pingTask?.cancel()
