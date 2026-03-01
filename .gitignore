@@ -19,3 +19,6 @@ Packages/ClaudeHubTerminal/.build/
 
 # App data
 scrollback/
+
+# Vercel
+landing/.vercel/
