@@ -8,6 +8,9 @@ final class MobileAppStore: ObservableObject {
     @Published var sessions: [MobileSession] = []
     @Published var selectedSessionID: UUID?
     @Published var pairedHostName: String?
+    @Published var recentProjectPaths: [RecentProjectPath] = []
+    @Published var hostGroups: [SessionGroupSummary] = []
+    @Published var isCreatingSession = false
 
     let relayClient = MobileRelayClient()
     private var pendingOpenSessionID: UUID?
@@ -37,6 +40,29 @@ final class MobileAppStore: ObservableObject {
                     hasUnread: $0.hasUnread
                 )
             }
+        }
+
+        relayClient.onSessionUpdated = { [weak self] summary in
+            guard let self,
+                  let index = self.sessions.firstIndex(where: { $0.id == summary.id })
+            else { return }
+
+            self.sessions[index].status = summary.status
+            self.sessions[index].name = summary.name
+            self.sessions[index].hasUnread = summary.hasUnread
+            if !summary.lastPreview.isEmpty {
+                self.sessions[index].lastPreview = summary.lastPreview
+            }
+        }
+
+        relayClient.onProjectPathsList = { [weak self] payload in
+            self?.recentProjectPaths = payload.recentPaths
+            self?.hostGroups = payload.groups
+        }
+
+        relayClient.onSessionCreated = { [weak self] summary in
+            self?.isCreatingSession = false
+            self?.prepareToOpenSession(summary.id)
         }
 
         relayClient.onTerminalSnapshot = { [weak self] sessionID, snapshot in
@@ -82,6 +108,12 @@ final class MobileAppStore: ObservableObject {
         }
     }
 
+    func reconnect() {
+        connectionState = .connecting
+        statusText = "Reconnecting…"
+        relayClient.reconnectIfPossible()
+    }
+
     func refreshSessions() {
         relayClient.requestSessions()
     }
@@ -106,5 +138,30 @@ final class MobileAppStore: ObservableObject {
         } else {
             relayClient.sendResize(cols: cols, rows: rows, for: sessionID)
         }
+    }
+
+    func requestProjectPaths() {
+        relayClient.requestProjectPaths()
+    }
+
+    func createSession(
+        name: String,
+        projectPath: String,
+        command: String,
+        flags: String,
+        groupID: UUID?,
+        useWorktree: Bool,
+        initialPrompt: String?
+    ) {
+        isCreatingSession = true
+        relayClient.createSession(CreateSessionPayload(
+            name: name,
+            projectPath: projectPath,
+            command: command,
+            flags: flags,
+            groupID: groupID,
+            useWorktree: useWorktree,
+            initialPrompt: initialPrompt
+        ))
     }
 }

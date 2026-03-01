@@ -1,5 +1,9 @@
 import ClaudeHubRemote
+#if canImport(CryptoKit)
 import CryptoKit
+#else
+import Crypto
+#endif
 import Foundation
 import NIOConcurrencyHelpers
 import Vapor

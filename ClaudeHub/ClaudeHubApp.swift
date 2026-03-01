@@ -44,9 +44,19 @@ struct ClaudeHubApp: App {
                 processManager: pm,
                 sessionManager: sm
             ))
+            // Persist hostID across launches so paired devices stay valid
+            let defaults = UserDefaults.standard
+            if defaults.string(forKey: "hostID")?.isEmpty != false {
+                defaults.set(UUID().uuidString, forKey: "hostID")
+            }
+            let storedHostID = defaults.string(forKey: "hostID") ?? UUID().uuidString
+            let storedRelayURL = defaults.string(forKey: "relayURL") ?? ""
+
             _remoteAgentService = StateObject(wrappedValue: RemoteAgentService(
                 sessionManager: sm,
-                processManager: pm
+                processManager: pm,
+                hostID: storedHostID,
+                relayURL: storedRelayURL
             ))
         } catch {
             fatalError("Failed to create model container: \(error)")

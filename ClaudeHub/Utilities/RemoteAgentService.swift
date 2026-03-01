@@ -271,6 +271,12 @@ final class RemoteAgentService: ObservableObject {
         case RemoteMessageType.pairingPendingApproval:
             guard let envelope = try? Self.decoder.decode(RemoteEnvelope<PairingPendingApprovalPayload>.self, from: data) else { return }
             handlePairingPendingApproval(envelope.payload)
+        case RemoteMessageType.listProjectPaths:
+            guard let envelope = try? Self.decoder.decode(RemoteEnvelope<EmptyPayload>.self, from: data) else { return }
+            handleListProjectPathsRequest(from: envelope.source.id)
+        case RemoteMessageType.createSession:
+            guard let envelope = try? Self.decoder.decode(RemoteEnvelope<CreateSessionPayload>.self, from: data) else { return }
+            handleCreateSessionRequest(envelope)
         default:
             break
         }
@@ -360,6 +366,94 @@ final class RemoteAgentService: ObservableObject {
             rows: envelope.payload.rows
         )
         handleTerminalResize(envelope.payload)
+    }
+
+    private func handleListProjectPathsRequest(from clientID: String) {
+        activeClientIDs.insert(clientID)
+
+        let sessions = sessionManager.fetchSessions(includeArchived: true)
+        var seenPaths = Set<String>()
+        var recentPaths: [RecentProjectPath] = []
+
+        for session in sessions {
+            let path = session.projectPath
+            guard !path.isEmpty, !seenPaths.contains(path) else { continue }
+            seenPaths.insert(path)
+
+            let url = URL(fileURLWithPath: path)
+            let name = url.lastPathComponent
+            let isGitRepo = FileManager.default.fileExists(
+                atPath: url.appendingPathComponent(".git").path
+            )
+
+            recentPaths.append(RecentProjectPath(
+                path: path,
+                name: name,
+                isGitRepo: isGitRepo
+            ))
+        }
+
+        let groups = sessionManager.fetchGroups().map {
+            SessionGroupSummary(id: $0.id, name: $0.name)
+        }
+
+        send(
+            type: RemoteMessageType.projectPathsList,
+            target: RemotePeer(kind: .client, id: clientID),
+            payload: ProjectPathsListPayload(recentPaths: recentPaths, groups: groups)
+        )
+    }
+
+    private func handleCreateSessionRequest(_ envelope: RemoteEnvelope<CreateSessionPayload>) {
+        activeClientIDs.insert(envelope.source.id)
+        let p = envelope.payload
+
+        let session = sessionManager.createSession(
+            name: p.name,
+            projectPath: p.projectPath,
+            command: p.command,
+            claudeFlags: p.flags,
+            groupID: p.groupID,
+            worktreePath: p.useWorktree ? p.projectPath : nil,
+            worktreeBranch: p.useWorktree ? "worktree/\(p.name.lowercased().replacingOccurrences(of: " ", with: "-"))" : nil
+        )
+
+        // Select the session to trigger process launch on Mac host
+        sessionManager.selectedSessionID = session.id
+
+        // If there's an initial prompt, inject it after a short delay to let the process start
+        if let prompt = p.initialPrompt, !prompt.isEmpty {
+            Task {
+                try? await Task.sleep(for: .seconds(1.5))
+                processManager.sendInput(prompt + "\n", to: session.id)
+            }
+        }
+
+        let summary = SessionSummary(
+            id: session.id,
+            name: session.name,
+            status: session.status.rawValue,
+            groupID: session.groupID,
+            lastPreview: session.lastMessagePreview,
+            hasUnread: session.hasUnread
+        )
+
+        // Send session_created to the requesting client
+        send(
+            type: RemoteMessageType.sessionCreated,
+            target: RemotePeer(kind: .client, id: envelope.source.id),
+            payload: SessionCreatedPayload(session: summary)
+        )
+
+        // Broadcast updated session list to all connected clients
+        let sessionListPayload = makeSessionListPayload()
+        for clientID in activeClientIDs {
+            send(
+                type: RemoteMessageType.sessionList,
+                target: RemotePeer(kind: .client, id: clientID),
+                payload: sessionListPayload
+            )
+        }
     }
 
     private func handlePairingCreated(_ payload: PairingCreatedPayload) {

@@ -26,6 +26,7 @@ struct RemoteTerminalView: UIViewRepresentable {
         view.font = .monospacedSystemFont(ofSize: 14, weight: .regular)
         view.optionAsMetaKey = false
         view.allowMouseReporting = false
+        context.coordinator.terminalView = view
         context.coordinator.render(transcript, in: view)
         return view
     }
@@ -41,6 +42,7 @@ struct RemoteTerminalView: UIViewRepresentable {
         private var lastTranscript = ""
         private var lastSize: (Int, Int)?
         private var hasSentInitialSize = false
+        weak var terminalView: TerminalView?
 
         init(
             onInitialSize: @escaping (Int, Int) -> Void,
@@ -76,9 +78,7 @@ struct RemoteTerminalView: UIViewRepresentable {
 
         func sizeChanged(source: TerminalView, newCols: Int, newRows: Int) {
             let size = (newCols, newRows)
-            if let lastSize, lastSize == size {
-                return
-            }
+            if let lastSize, lastSize == size { return }
             lastSize = size
             if !hasSentInitialSize {
                 hasSentInitialSize = true
@@ -88,22 +88,11 @@ struct RemoteTerminalView: UIViewRepresentable {
             onResize(newCols, newRows)
         }
 
-        func setTerminalTitle(source: TerminalView, title: String) {
-        }
-
-        func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {
-        }
-
-        func scrolled(source: TerminalView, position: Double) {
-        }
-
-        func requestOpenLink(source: TerminalView, link: String, params: [String: String]) {
-        }
-
-        func clipboardCopy(source: TerminalView, content: Data) {
-        }
-
-        func rangeChanged(source: TerminalView, startY: Int, endY: Int) {
-        }
+        func setTerminalTitle(source: TerminalView, title: String) {}
+        func hostCurrentDirectoryUpdate(source: TerminalView, directory: String?) {}
+        func scrolled(source: TerminalView, position: Double) {}
+        func requestOpenLink(source: TerminalView, link: String, params: [String: String]) {}
+        func clipboardCopy(source: TerminalView, content: Data) {}
+        func rangeChanged(source: TerminalView, startY: Int, endY: Int) {}
     }
 }

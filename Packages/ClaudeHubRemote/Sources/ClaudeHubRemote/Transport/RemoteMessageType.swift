@@ -24,4 +24,9 @@ public enum RemoteMessageType {
     public static let terminalInterrupt = "terminal_interrupt"
     public static let terminalResize = "terminal_resize"
     public static let sessionUpdated = "session_updated"
+
+    public static let listProjectPaths = "list_project_paths"
+    public static let projectPathsList = "project_paths_list"
+    public static let createSession = "create_session"
+    public static let sessionCreated = "session_created"
 }

@@ -24,6 +24,7 @@
 		7776EF6DE126E96C4C824EDB /* KeyboardShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65612804354FE8A4215FAC4E /* KeyboardShortcuts.swift */; };
 		8D3698085BF6016783B682DC /* SessionGroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6A3DD52EC34D5C380FD1C8 /* SessionGroupView.swift */; };
 		8FF8BBF32C482DF95D39605D /* ClaudeHubCore in Frameworks */ = {isa = PBXBuildFile; productRef = CF6236E0958BF6D17E4BB311 /* ClaudeHubCore */; };
+		A1B2C3D4E5F60718A9B0C1D2 /* PairingQRSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718A9B0C1D3 /* PairingQRSheet.swift */; };
 		A7D9CB51DE17BACA6E62F7C0 /* BroadcastSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1445D6F6B0C9E4A0657B0E3D /* BroadcastSheet.swift */; };
 		AB38E3C6A29FA4F02A2EA722 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC2D688EDEE1DCCFC5B9902 /* DashboardView.swift */; };
 		B64AEFBBEA3371C9BB7820C2 /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E46EDA9B38E64B20B92B5CF /* MainWindow.swift */; };
@@ -51,6 +52,7 @@
 		81030E0B3817A3F7A77E5036 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		823FDA824EEBF1C31C3A29BC /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		9F3E3E2321CE92167A28A373 /* Cl.hub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cl.hub.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B2C3D4E5F60718A9B0C1D3 /* PairingQRSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingQRSheet.swift; sourceTree = "<group>"; };
 		AB6A3DD52EC34D5C380FD1C8 /* SessionGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionGroupView.swift; sourceTree = "<group>"; };
 		AFE04E734B2646B4AAA9B8DD /* RemoteRelayTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRelayTransport.swift; sourceTree = "<group>"; };
 		B366ABA2EA31FC6DA6FFBE6A /* TerminalRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalRepresentable.swift; sourceTree = "<group>"; };
@@ -120,6 +122,7 @@
 			isa = PBXGroup;
 			children = (
 				81030E0B3817A3F7A77E5036 /* SettingsView.swift */,
+				A1B2C3D4E5F60718A9B0C1D3 /* PairingQRSheet.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -286,6 +289,7 @@
 				8D3698085BF6016783B682DC /* SessionGroupView.swift in Sources */,
 				4D1D6AE7EEE7E5A38D45A7AD /* SessionRowView.swift in Sources */,
 				BF376FE73C08F9B715FFC476 /* SettingsView.swift in Sources */,
+				A1B2C3D4E5F60718A9B0C1D2 /* PairingQRSheet.swift in Sources */,
 				1FD233D27BFDFA93437BD254 /* SidebarView.swift in Sources */,
 				595DFA0A08147DDF41C43540 /* TaskWizardView.swift in Sources */,
 				31985E0C423F681EBFB3384F /* TerminalContainerView.swift in Sources */,

@@ -1,0 +1,2 @@
+[build]
+dockerfilePath = "Backend/ClaudeHubRelay/Dockerfile"

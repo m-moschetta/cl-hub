@@ -170,7 +170,9 @@ private func handleHostMessage(
     case RemoteMessageType.sessionList,
          RemoteMessageType.terminalOutput,
          RemoteMessageType.terminalSnapshot,
-         RemoteMessageType.sessionUpdated:
+         RemoteMessageType.sessionUpdated,
+         RemoteMessageType.projectPathsList,
+         RemoteMessageType.sessionCreated:
         // Pass-through: forward raw JSON to the target client
         if let clientSocket = registry.clientSocket(for: header.target.id) {
             clientSocket.send(text)
@@ -248,7 +250,9 @@ private func handleClientMessage(
          RemoteMessageType.openSession,
          RemoteMessageType.terminalInput,
          RemoteMessageType.terminalInterrupt,
-         RemoteMessageType.terminalResize:
+         RemoteMessageType.terminalResize,
+         RemoteMessageType.listProjectPaths,
+         RemoteMessageType.createSession:
         // Pass-through: forward raw JSON to the target host
         if let hostSocket = registry.hostSocket(for: header.target.id) {
             hostSocket.send(text)

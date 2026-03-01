@@ -8,6 +8,9 @@ final class MobileRelayClient: NSObject, ObservableObject {
     var onSessionList: (([SessionSummary]) -> Void)?
     var onTerminalSnapshot: ((UUID, String) -> Void)?
     var onTerminalOutput: ((UUID, String) -> Void)?
+    var onSessionUpdated: ((SessionSummary) -> Void)?
+    var onProjectPathsList: ((ProjectPathsListPayload) -> Void)?
+    var onSessionCreated: ((SessionSummary) -> Void)?
     var onPairingSuccess: ((PairingSuccessPayload) -> Void)?
     var onClientAuthenticated: ((PairedHostRecord) -> Void)?
     var onStatusText: ((String) -> Void)?
@@ -96,6 +99,24 @@ final class MobileRelayClient: NSObject, ObservableObject {
         )
     }
 
+    func requestProjectPaths() {
+        guard let hostID else { return }
+        send(
+            type: RemoteMessageType.listProjectPaths,
+            target: RemotePeer(kind: .host, id: hostID),
+            payload: EmptyPayload()
+        )
+    }
+
+    func createSession(_ payload: CreateSessionPayload) {
+        guard let hostID else { return }
+        send(
+            type: RemoteMessageType.createSession,
+            target: RemotePeer(kind: .host, id: hostID),
+            payload: payload
+        )
+    }
+
     func disconnect() {
         webSocketTask?.cancel(with: .normalClosure, reason: nil)
         webSocketTask = nil
@@ -167,6 +188,18 @@ final class MobileRelayClient: NSObject, ObservableObject {
             guard let envelope = try? Self.decoder.decode(RemoteEnvelope<TerminalOutputPayload>.self, from: data) else { return }
             onTerminalOutput?(envelope.payload.sessionID, envelope.payload.data)
 
+        case RemoteMessageType.sessionUpdated:
+            guard let envelope = try? Self.decoder.decode(RemoteEnvelope<SessionUpdatedPayload>.self, from: data) else { return }
+            onSessionUpdated?(envelope.payload.session)
+
+        case RemoteMessageType.projectPathsList:
+            guard let envelope = try? Self.decoder.decode(RemoteEnvelope<ProjectPathsListPayload>.self, from: data) else { return }
+            onProjectPathsList?(envelope.payload)
+
+        case RemoteMessageType.sessionCreated:
+            guard let envelope = try? Self.decoder.decode(RemoteEnvelope<SessionCreatedPayload>.self, from: data) else { return }
+            onSessionCreated?(envelope.payload.session)
+
         default:
             onStatusText?(header.type)
         }
@@ -223,16 +256,23 @@ final class MobileRelayClient: NSObject, ObservableObject {
     }
 
     private func connectSocket(to relayURL: String) {
-        guard let relayBase = URL(string: relayURL) else {
+        guard var components = URLComponents(string: relayURL) else {
             onStatusText?("Invalid relay URL")
             return
         }
 
-        let wsURL = relayBase
-            .deletingLastPathComponent()
-            .appending(path: "ws")
-            .appending(path: "client")
-            .appending(path: clientID)
+        // Ensure ws/wss scheme
+        if components.scheme == "http" { components.scheme = "ws" }
+        if components.scheme == "https" { components.scheme = "wss" }
+
+        // Append /ws/client/{clientID} to the base path
+        let basePath = components.path.hasSuffix("/") ? components.path : components.path + "/"
+        components.path = basePath + "ws/client/" + clientID
+
+        guard let wsURL = components.url else {
+            onStatusText?("Invalid relay URL")
+            return
+        }
 
         let task = session.webSocketTask(with: wsURL)
         webSocketTask = task

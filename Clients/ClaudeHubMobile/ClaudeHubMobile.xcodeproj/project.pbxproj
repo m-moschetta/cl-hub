@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -23,6 +23,7 @@
 		CC977CFF549FCB7BD1569976 /* MobileRelayClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F075EB938C426F857DF89BDB /* MobileRelayClient.swift */; };
 		E21645A5830F5A309A407051 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = D1B7EB9703F07E784E44AE06 /* SwiftTerm */; };
 		FB71A103FC36112A82E6626D /* MobileAppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EE8432B74430A98A3FBF92 /* MobileAppStore.swift */; };
+		A1B2C3D4E5F60718091A2B3C /* NewSessionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6071809A1B2C3D4E5F6 /* NewSessionSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,7 +32,7 @@
 		5F5CB9856E0108444286CD47 /* MobileRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileRootView.swift; sourceTree = "<group>"; };
 		6A3CFB8D810925F7517D1AA6 /* MobileSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileSession.swift; sourceTree = "<group>"; };
 		7814B3D9BBE89C318BAB7C1F /* ChatRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatRowView.swift; sourceTree = "<group>"; };
-		7CC01A41E1A2B3486F489CBE /* ClaudeHubMobile.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ClaudeHubMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7CC01A41E1A2B3486F489CBE /* ClaudeHubMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClaudeHubMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A9574578A42BA388D500914 /* MobileCredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileCredentialStore.swift; sourceTree = "<group>"; };
 		95AF8096D238183441DC51A1 /* MobileConnectionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileConnectionState.swift; sourceTree = "<group>"; };
 		ABBF762AE4BD0F371BE849C8 /* TerminalScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalScreenView.swift; sourceTree = "<group>"; };
@@ -42,6 +43,7 @@
 		E4BE8603F7C0F9A886B9A214 /* RemoteTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteTerminalView.swift; sourceTree = "<group>"; };
 		E7DB59F332322C0116737F79 /* ClaudeHubMobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeHubMobileApp.swift; sourceTree = "<group>"; };
 		F075EB938C426F857DF89BDB /* MobileRelayClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileRelayClient.swift; sourceTree = "<group>"; };
+		D4E5F6071809A1B2C3D4E5F6 /* NewSessionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewSessionSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,10 +147,19 @@
 			isa = PBXGroup;
 			children = (
 				4519175BAFA99C1C84F3B89E /* Chats */,
+				F1A2B3C4D5E6F70819203142 /* NewSession */,
 				9853D49099D5B9C1B9FED04A /* Pairing */,
 				B049FA7A20BF9D328BA50E55 /* Terminal */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		F1A2B3C4D5E6F70819203142 /* NewSession */ = {
+			isa = PBXGroup;
+			children = (
+				D4E5F6071809A1B2C3D4E5F6 /* NewSessionSheet.swift */,
+			);
+			path = NewSession;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -197,7 +208,6 @@
 				D75ABDD5D90375B166CD3795 /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 				196D18D8EA5799E41847A752 /* XCLocalSwiftPackageReference "../../Packages/ClaudeHubRemote" */,
 			);
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -220,6 +230,7 @@
 				CC977CFF549FCB7BD1569976 /* MobileRelayClient.swift in Sources */,
 				11C31F50126F790816053C2A /* MobileRootView.swift in Sources */,
 				2A568438F80362EDD7DEB4B9 /* MobileSession.swift in Sources */,
+				A1B2C3D4E5F60718091A2B3C /* NewSessionSheet.swift in Sources */,
 				39820AA244B4C04E01946F4C /* PairingSheet.swift in Sources */,
 				98B1F24A6C4B47F8A2ABB361 /* QRCodePairingParser.swift in Sources */,
 				CC17ECEFBE0427C99B9294DD /* QRCodeScannerView.swift in Sources */,
@@ -237,13 +248,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "ClaudeHub Mobile";
-				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "ClaudeHub Mobile scans pairing QR codes from your Mac.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ClaudeHub Mobile discovers and connects to your paired ClaudeHub relay.";
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				DEVELOPMENT_TEAM = 5RQLC57A8N;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -381,13 +388,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "ClaudeHub Mobile";
-				INFOPLIST_KEY_LSRequiresIPhoneOS = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "ClaudeHub Mobile scans pairing QR codes from your Mac.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "ClaudeHub Mobile discovers and connects to your paired ClaudeHub relay.";
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				DEVELOPMENT_TEAM = 5RQLC57A8N;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

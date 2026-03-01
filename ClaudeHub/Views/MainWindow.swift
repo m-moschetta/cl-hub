@@ -9,6 +9,7 @@ struct MainWindow: View {
     @EnvironmentObject var sessionManager: SessionManager
     @EnvironmentObject var processManager: ProcessManager
     @EnvironmentObject var orchestrationEngine: OrchestrationEngine
+    @EnvironmentObject var remoteAgentService: RemoteAgentService
 
     @State private var selectedSessionID: UUID?
     @State private var activatedSessionIDs: Set<UUID> = []
@@ -16,6 +17,7 @@ struct MainWindow: View {
     @State private var showBroadcast = false
     @State private var showTaskWizard = false
     @State private var showDashboard = false
+    @State private var showPairing = false
     @State private var isSidebarVisible = true
 
     @Query(filter: #Predicate<Session> { !$0.isArchived },
@@ -81,6 +83,12 @@ struct MainWindow: View {
                     Image(systemName: "plus.rectangle.on.folder")
                 }
                 .help("New Task")
+
+                Button(action: { showPairing = true }) {
+                    Image(systemName: remoteAgentService.isAuthenticated ? "iphone.circle.fill" : "iphone.circle")
+                        .foregroundStyle(remoteAgentService.isAuthenticated ? .green : .secondary)
+                }
+                .help("Pair iOS Device")
             }
         }
         .sheet(isPresented: $showNewSession) {
@@ -91,6 +99,10 @@ struct MainWindow: View {
         }
         .sheet(isPresented: $showTaskWizard) {
             TaskWizardView()
+        }
+        .sheet(isPresented: $showPairing) {
+            PairingQRSheet()
+                .environmentObject(remoteAgentService)
         }
         .task {
             selectedSessionID = sessionManager.selectedSessionID

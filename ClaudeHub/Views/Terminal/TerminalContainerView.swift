@@ -1,6 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import ClaudeHubCore
+import ClaudeHubRemote
 import ClaudeHubTerminal
 
 /// Container for the terminal with a toolbar showing session info.
@@ -44,6 +45,9 @@ struct TerminalContainerView: View {
                     }
 
                     previousStatus = status
+
+                    // Broadcast to remote clients
+                    broadcastSessionUpdate()
                 },
                 onPreviewUpdate: { preview in
                     sessionManager.updateLastPreview(session, preview: preview)
@@ -254,6 +258,18 @@ struct TerminalContainerView: View {
            let text = String(data: data, encoding: .utf8) {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(text, forType: .string)
+        }
+    }
+
+    private func broadcastSessionUpdate() {
+        guard remoteAgentService.isAuthenticated else { return }
+        let payload = remoteAgentService.makeSessionUpdatedPayload(for: session)
+        for clientID in remoteAgentService.activeClientIDs {
+            remoteAgentService.send(
+                type: RemoteMessageType.sessionUpdated,
+                target: RemotePeer(kind: .client, id: clientID),
+                payload: payload
+            )
         }
     }
 }

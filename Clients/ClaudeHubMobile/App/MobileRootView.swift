@@ -5,37 +5,24 @@ struct MobileRootView: View {
     @State private var showingPairing = false
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if let selectedSession = appStore.selectedSession {
-                    TerminalScreenView(session: selectedSession)
-                } else {
-                    ChatListView()
-                }
-            }
-            .navigationTitle(appStore.selectedSession == nil ? "ClaudeHub" : "")
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    if appStore.selectedSession != nil {
-                        Button("Chats") {
-                            appStore.selectedSessionID = nil
-                        }
-                    }
-                }
-
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showingPairing = true
-                    } label: {
-                        Image(systemName: "qrcode.viewfinder")
-                    }
-                }
+        Group {
+            if let session = appStore.selectedSession {
+                TerminalScreenView(session: session)
+            } else {
+                ChatListView(showingPairing: $showingPairing)
             }
         }
+        .animation(.smooth, value: appStore.selectedSessionID)
         .sheet(isPresented: $showingPairing) {
             PairingSheet()
                 .environmentObject(appStore)
         }
         .tint(.green)
+        .preferredColorScheme(.dark)
+        .onChange(of: appStore.connectionState) { _, newState in
+            if newState == .authenticated && showingPairing {
+                showingPairing = false
+            }
+        }
     }
 }
